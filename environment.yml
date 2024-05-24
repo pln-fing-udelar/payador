@@ -1,0 +1,9 @@
+name: payador
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+      - google-generativeai==0.4

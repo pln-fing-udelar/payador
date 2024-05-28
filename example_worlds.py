@@ -79,13 +79,13 @@ def get_world_2() -> World:
 
     place_1 = Location("Cellar",
                        ["There is a metal door locked by a lock", "You can see damp patches on the walls"],
-                       items = [item_3, item_5, item_7])
+                       items = [item_2, item_3, item_5, item_7])
     place_1.connecting_locations = [place_2]
     place_1.block_passage(place_2, item_4)
 
     player = Character("Cid",
                        ["A tall soldier"],
-                       inventory = [item_1, item_2],
+                       inventory = [item_1],
                        location = place_1)
     npc = Character("Elvira",
                             ["A little girl", "Her favorite food is apple pie, but she enjoys eating any fruit", "She can't read yet"],

@@ -25,7 +25,7 @@ print ("""
 PAYADOR is an approach to tackle the world-update problem in Interactive Storytelling.
 This proof of concept is intended to ease research on the aforementioned problem and other related tasks. 
 
-The system will print the current 🌎world state🌍 and a possible 📖description📖 for it.
+The system will print the current 🌎 World state 🌍 and a possible 📖 narration 📖 for it.
 Then you will be asked to enter some action(s), and the system will try to predict the outcomes. 
 
 Enter "q" to quit.
@@ -41,7 +41,7 @@ while(True):
         last_player_position = world.player.location
         prompt_scene = prompt_narrate_current_scene(world.render_world())
         response_scene = model.prompt_model(prompt_scene)
-        print("📖 Narration 📖")
+        print("\n📖 Narration of the scene 📖")
         try:
             print(f"{response_scene}\n")
         except Exception as e:
@@ -64,7 +64,7 @@ while(True):
         print (f"Error: {e}")
 
     # Show a narration for those changes
-    print("📖 Narration of the predicted outcomes 📖")
+    print("\n📖 Narration of the predicted outcomes 📖")
     try:
         print(f"{re.findall(r'#([^#]*?)#',response_update)[0]}\n")
     except Exception as e:

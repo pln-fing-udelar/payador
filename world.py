@@ -56,6 +56,7 @@ class Location (Component):
     if location in self.connecting_locations:
       if location.name not in self.blocked_locations:
         self.blocked_locations[location.name] = (location, obstacle, symmetric)
+        self.connecting_locations = [x for x in self.connecting_locations if x is not location]
       else:
         raise Exception(f"Error: A blocked passage to {location.name} already exists")
     else:
@@ -66,10 +67,13 @@ class Location (Component):
 
     In case that the block was symmetric, self will be added to the connecting locations of location.
     """
-    self.connecting_locations += [location]
-    if self.blocked_locations[location.name][2]:
-      location.connecting_locations += [self]
-    del self.blocked_locations[location.name]
+    if self.blocked_locations[location.name]:
+      self.connecting_locations += [location]
+      if self.blocked_locations[location.name][2]:
+        location.connecting_locations += [self]
+      del self.blocked_locations[location.name]
+    else:
+      raise Exception("Error: That is not a blocked passage")
 
 class Character (Component):
   """A class to represent a character."""
@@ -175,23 +179,42 @@ class World:
     If detail_components is False, then the descriptions for each component are not included.
     """
     player_location = self.player.location
+    reachable_locations = [f"<{p.name}>" for p in player_location.connecting_locations]
+    blocked_passages = [f"<{p}> blocked by <{player_location.blocked_locations[p][1].name}>" for p in player_location.blocked_locations.keys()]
+    characters_in_the_scene = [character for character in self.characters.values() if character.location is player_location]
 
+    
     world_description = f'You are in <{player_location.name}>\n'
-    world_description += f'From <{player_location.name}> you can access: {(", ").join([f"<{p.name}>" for p in player_location.connecting_locations])}\n'
-    world_description += f'From <{player_location.name}> there are blocked passages to: {(", ").join([f"<{p}> blocked by <{player_location.blocked_locations[p][1].name}>" for p in player_location.blocked_locations.keys()])}\n'
-    world_description += f'You have the following items in your inventory: {(", ").join([f"<{i.name}>" for i in self.player.inventory])}\n'
-    world_description += f'If you look around, you can see: {(", ").join([f"<{i.name}>" for i in player_location.items])}\n'
+    
+    if reachable_locations:
+      world_description += f'From <{player_location.name}> you can access: {(", ").join(reachable_locations)}\n'
+    else:
+      world_description += f'From <{player_location.name}> you can access: None\n'
 
-    other_characters = [f"<{c_name}>" for c_name in self.characters
-                        if self.characters[c_name].location is player_location]
-    if other_characters:
-      world_description += f'You can also see some people: {(", ").join(other_characters)}'
+    if blocked_passages:
+      world_description += f'From <{player_location.name}> there are blocked passages to: {(", ").join(blocked_passages)}\n'
+    else:
+      world_description += f'From <{player_location.name}> there are blocked passages to: None\n'
+
+    if self.player.inventory:
+      world_description += f'You have the following items in your inventory: {(", ").join([f"<{i.name}>" for i in self.player.inventory])}\n'
+    else:
+      world_description += f'You have the following items in your inventory: None\n'
+
+    if player_location.items:
+      world_description += f'If you look around, you can see the following items: {(", ").join([f"<{i.name}>" for i in player_location.items])}\n'
+    else:
+      world_description += f'If you look around, you can see the following items: None\n'
+      
+    if characters_in_the_scene:
+      world_description += f'You can see some people: {(", ").join([f"<{c.name}>" for c in characters_in_the_scene])}'
+    else:
+      world_description += f'You can see some people: None'
 
     details = ""
     if detail_components:
       items_in_the_scene = player_location.items + self.player.inventory + [blocked_values[1] for blocked_values in player_location.blocked_locations.values() if isinstance(blocked_values[1], Item)]
-      characters_in_the_scene = [character for character in self.characters.values() if character.location is player_location]
-
+      
       details += "\nHere is a description of each component.\n"
       details += f"<{player_location.name}>: This is the player's location. {('. ').join(player_location.descriptions)}.\n"
       details += "Characters:\n"
@@ -202,6 +225,8 @@ class World:
           if len(character.inventory)>0:
             details += f" This character has the following items: {(', ').join([f'<{i.name}>' for i in character.inventory])}\n"
             items_in_the_scene+= character.inventory
+          else:
+            details += "\n"
       if len(items_in_the_scene)>0:
         details+="Objects:\n"
         for item in items_in_the_scene:

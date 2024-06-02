@@ -64,5 +64,10 @@ Coming soon!
 If you use some part of this work in your research, please cite:
 
 ```
-Coming soon!
+@inproceedings{gongora2024payador,
+  title={PAYADOR: A Minimalist Approach to Grounding Language Models on Structured Data for Interactive Storytelling and Role-playing Games},
+  author={G{\'o}ngora, Santiago and Chiruzzo, Luis and M{\'e}ndez, Gonzalo and Gerv{\'a}s, Pablo},
+  booktitle={Proceedings of The 15th International Conference on Computational Creativity},
+  year={2024}
+}
 ```

@@ -56,8 +56,7 @@ python main.py
 
 ## 📄 Paper
 
-
-Coming soon!
+Preprint: [Research gate preprint](https://www.researchgate.net/publication/381469918_PAYADOR_A_Minimalist_Approach_to_Grounding_Language_Models_on_Structured_Data_for_Interactive_Storytelling_and_Role-playing_Games)
 
 ### Citation
 

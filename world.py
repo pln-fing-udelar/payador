@@ -95,12 +95,15 @@ class Character (Component):
     else:
       raise Exception(f"Error: {new_location.name} is not reachable")
 
-  def save_item(self,item: Item):
+  def save_item(self,item: Item, item_location_or_owner):
     """Add an item to the character inventory."""
     if item.gettable:
       if item not in self.inventory:
         self.inventory += [item]
-        self.location.items = [i for i in self.location.items if i is not item]
+        if item_location_or_owner.__class__.__name__ == 'Character':
+          item_location_or_owner.inventory = [i for i in item_location_or_owner.inventory if i is not item]
+        elif item_location_or_owner.__class__.__name__ == 'Location':
+          item_location_or_owner.items = [i for i in item_location_or_owner.items if i is not item]
       else:
         raise Exception(f"Error: {item.name} is already in your inventory")
     else:
@@ -114,8 +117,7 @@ class Character (Component):
   def give_item (self, character: 'Character', item: Item):
     """Give an item to another character."""
     try:
-      self.inventory = [i for i in self.inventory if i is not item]
-      character.save_item(item)
+      character.save_item(item, self)
     except Exception as e:
       print(e)
 
@@ -261,10 +263,15 @@ class World:
         pair = re.findall(r"<([^<>]*?)>.*?<([^<>]*?)>",parsed_object)
         try:
           world_item = self.items[pair[0][0]]
+          
           if pair[0][1] == 'Inventory': #(save_item case)
-            self.player.save_item(world_item)
+            item_location = [character for character in list(self.characters.values()) if world_item in character.inventory]
+            item_location += [location for location in list(self.locations.values()) if world_item in location.items]
+            self.player.save_item(world_item, item_location[0])
+
           elif pair[0][1] in self.characters: #(give_item case)
             self.player.give_item(self.characters[pair[0][1]], world_item)
+          
           else: #(drop_item case)
             self.player.drop_item(world_item)
         except Exception as e:

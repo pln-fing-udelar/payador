@@ -1,0 +1,80 @@
+{
+  "locations": [
+    {
+      "id": "loc_0",
+      "name": "Pasillo de la Escuela",
+      "descriptions": [
+        "Un pasillo ocupado con casilleros de estudiantes alineados en las paredes",
+        "Las puertas de las aulas están numeradas secuencialmente",
+        "Pósters y avisos cubren los tablones de anuncios"
+      ],
+      "connecting_locations": [
+        "loc_1"
+      ],
+      "blocked_locations": {},
+      "items": []
+    },
+    {
+      "id": "loc_1",
+      "name": "Oficina de la Maestra",
+      "descriptions": [
+        "Una pequeña oficina llena de materiales de enseñanza y trabajos de estudiantes",
+        "Libros y papeles están organizados en estantes",
+        "Una computadora se encuentra sobre el escritorio de madera"
+      ],
+      "connecting_locations": [
+        "loc_0"
+      ],
+      "blocked_locations": {},
+      "items": []
+    }
+  ],
+  "items": [
+    {
+      "id": "item_0",
+      "name": "Tarea Completada",
+      "descriptions": [
+        "Una tarea completada escrita prolijamente",
+        "Vence hoy en clase",
+        "La estudiante trabajó duro en esta tarea"
+      ],
+      "gettable": true
+    }
+  ],
+  "characters": [
+    {
+      "id": "char_1",
+      "name": "Sra. García",
+      "descriptions": [
+        "Una maestra dedicada con un comportamiento amable",
+        "Revisa el trabajo de los estudiantes en su escritorio",
+        "Su expresión es cálida y alentadora"
+      ],
+      "location": "loc_1",
+      "inventory": []
+    }
+  ],
+  "player": {
+    "id": "char_0",
+    "name": "María",
+    "descriptions": [
+      "Una estudiante diligente con determinación",
+      "Lleva su trabajo escolar con cuidado",
+      "Su rostro muestra una mezcla de responsabilidad y alivio"
+    ],
+    "location": "loc_0",
+    "inventory": [
+      "item_0"
+    ]
+  },
+  "objective": {
+    "first": {
+      "type": "Item",
+      "id": "item_0"
+    },
+    "second": {
+      "type": "Character",
+      "id": "char_1"
+    }
+  }
+}

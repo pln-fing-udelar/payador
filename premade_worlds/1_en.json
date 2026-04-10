@@ -1,0 +1,140 @@
+{
+  "locations": [
+    {
+      "id": "loc_0",
+      "name": "Art studio",
+      "descriptions": [
+        "This is the art studio that Emma's mom has in the house"
+      ],
+      "connecting_locations": [
+        "loc_1"
+      ],
+      "blocked_locations": {},
+      "items": [
+        "item_1",
+        "item_0"
+      ]
+    },
+    {
+      "id": "loc_1",
+      "name": "Kitchen",
+      "descriptions": [
+        "The kitchen of the house",
+        "It's not huge, but it's not the smallest kitchen in the world either.",
+        "A lot of light comes in through the windows"
+      ],
+      "connecting_locations": [
+        "loc_0"
+      ],
+      "blocked_locations": {
+        "loc_2": {
+          "obstacle": {
+            "type": "Item",
+            "id": "item_3"
+          },
+          "symmetric": true
+        }
+      },
+      "items": []
+    },
+    {
+      "id": "loc_2",
+      "name": "Garden",
+      "descriptions": [
+        "The garden of the house",
+        "It is relatively small, about 5 square meters."
+      ],
+      "connecting_locations": [
+        "loc_1"
+      ],
+      "blocked_locations": {},
+      "items": [
+        "item_4"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "item_0",
+      "name": "A green hammer",
+      "descriptions": [
+        "A small green hammer",
+        "It is just a toy and you cannot break anything with it"
+      ],
+      "gettable": true
+    },
+    {
+      "id": "item_1",
+      "name": "A grey hammer",
+      "descriptions": [
+        "A big grey hammer that can be used to break things",
+        "It is so heavy..."
+      ],
+      "gettable": true
+    },
+    {
+      "id": "item_2",
+      "name": "Key",
+      "descriptions": [
+        "A key to open a lock",
+        "It is golden",
+        "There is a strange coat of arms engraved on it"
+      ],
+      "gettable": true
+    },
+    {
+      "id": "item_3",
+      "name": "Lock",
+      "descriptions": [
+        "A strong lock with a coat of arms engraved on it",
+        "It seems that it cannot be opened with your bare hands"
+      ],
+      "gettable": true
+    },
+    {
+      "id": "item_4",
+      "name": "Turtle",
+      "descriptions": [
+        "A small turtle",
+        "Emma's pet",
+        "Emma calls it 'Hojita'"
+      ],
+      "gettable": true
+    }
+  ],
+  "characters": [
+    {
+      "id": "char_1",
+      "name": "Laura",
+      "descriptions": [
+        "A woman in her 40s",
+        "She is Emma's mom",
+        "She is an artist, and loves oil painting"
+      ],
+      "location": "loc_0",
+      "inventory": [
+        "item_2"
+      ]
+    }
+  ],
+  "player": {
+    "id": "char_0",
+    "name": "Emma",
+    "descriptions": [
+      "A teenager of average height",
+      "She is looking for her pet 'Hojita'"
+    ],
+    "location": "loc_0",
+    "inventory": []
+  },
+  "objective": {
+    "first": {
+      "type": "Item",
+      "id": "item_4"
+    },
+    "second": {
+      "type": "Location",
+      "id": "loc_1"
+    }
+  }
+}

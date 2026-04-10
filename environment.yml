@@ -3,7 +3,10 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.12
+  - python=3.14
   - pip
   - pip:
-      - google-generativeai==0.4
+      - google-genai
+      - python-dotenv
+      - jsonpickle==4.*
+      - gradio==6.*

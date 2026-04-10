@@ -1,5 +1,5 @@
 # PAYADOR
-This repository contains the code for the PAYADOR approach, described in the ICCC24 paper “[PAYADOR: A Minimalist Approach to Grounding Language Models on Structured Data for Interactive Storytelling and Role-playing Games](https://github.com/pln-fing-udelar/payador/blob/main/PAYADOR_ICCC-2024-Proceedings.pdf)”.
+This repository contains the code for the PAYADOR approach, described in the ICCC24 paper “[PAYADOR: A Minimalist Approach to Grounding Language Models on Structured Data for Interactive Storytelling and Role-playing Games](https://computationalcreativity.net/iccc24/papers/ICCC24_paper_152.pdf)”.
 
 TL;DR: The PAYADOR approach to the world-update problem in Interactive Storytelling (and Role-playing Games) consists of grounding Large Language Models to structured data and use them to predict the outcomes of the player input.
 
@@ -20,7 +20,6 @@ The PAYADOR approach is intended to be easily adaptable for other research probl
     - ❗ If you are working for a different language than English, you will need to adapt these prompts.
     - ❗ If you are working for other changes in the fictional world, you will need to ask for additional updates in the *prompt_world_update* function.
 
-![A picture describing the PAYADOR approach, taken from the paper.](pipeline.jpg "Payador pipeline")
 ## ⚙️ Usage
 
 Please, follow these steps to get this code running.

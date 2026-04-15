@@ -1,0 +1,124 @@
+{
+  "locations": [
+    {
+      "id": "loc_0",
+      "name": "Garden",
+      "descriptions": [
+        "A beautiful garden",
+        "There is a statue in the center"
+      ],
+      "connecting_locations": [
+        "loc_1"
+      ],
+      "blocked_locations": {
+        "loc_2": {
+          "obstacle": {
+            "type": "Puzzle",
+            "name": "puzzle",
+            "descriptions": [
+              "There's a symbol of a microphone and below a letter that says how to open the door"
+            ],
+            "problem": "To unlock this door, you have to say out loud the sum of 6 and 0.",
+            "answer": "The answer is 6 "
+          },
+          "symmetric": true
+        }
+      },
+      "items": [
+        "item_2"
+      ]
+    },
+    {
+      "id": "loc_1",
+      "name": "Cabin",
+      "descriptions": [
+        "A small cabin",
+        "It looks like no one has lived here for a while"
+      ],
+      "connecting_locations": [
+        "loc_0"
+      ],
+      "blocked_locations": {},
+      "items": []
+    },
+    {
+      "id": "loc_2",
+      "name": "Mansion hall",
+      "descriptions": [
+        "A big hall",
+        "There is a big staircase"
+      ],
+      "connecting_locations": [
+        "loc_0"
+      ],
+      "blocked_locations": {},
+      "items": []
+    }
+  ],
+  "items": [
+    {
+      "id": "item_0",
+      "name": "Apple",
+      "descriptions": [
+        "A fruit that can be eaten",
+        "It is round-shaped and green"
+      ],
+      "gettable": true
+    },
+    {
+      "id": "item_1",
+      "name": "Mate",
+      "descriptions": [
+        "A classical mate, ready to drink!",
+        "It contains some yerba",
+        "You can drink this to boost your energy!"
+      ],
+      "gettable": true
+    },
+    {
+      "id": "item_2",
+      "name": "Toy car",
+      "descriptions": [
+        "A tiny toy purple car",
+        "It looks brand new"
+      ],
+      "gettable": true
+    }
+  ],
+  "characters": [
+    {
+      "id": "char_1",
+      "name": "Javier",
+      "descriptions": [
+        "He has a long beard",
+        "He loves to restore furtniture"
+      ],
+      "location": "loc_2",
+      "inventory": [
+        "item_1"
+      ]
+    }
+  ],
+  "player": {
+    "id": "char_0",
+    "name": "Alicia",
+    "descriptions": [
+      "She is wearing a long skirt",
+      "She likes to sing"
+    ],
+    "location": "loc_0",
+    "inventory": [
+      "item_0"
+    ]
+  },
+  "objective": {
+    "first": {
+      "type": "Item",
+      "id": "item_2"
+    },
+    "second": {
+      "type": "Character",
+      "id": "char_1"
+    }
+  }
+}

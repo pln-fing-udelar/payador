@@ -1,0 +1,138 @@
+{
+  "locations": [
+    {
+      "id": "loc_0",
+      "name": "Claro en el monte",
+      "descriptions": [
+        "Un claro en un monte de eucaliptus cerca del Río Uruguay",
+        "Se puede escuchar el sonido de los animales que viven en los árboles de este monte"
+      ],
+      "connecting_locations": [],
+      "blocked_locations": {
+        "loc_1": {
+          "obstacle": {
+            "type": "Item",
+            "id": "item_3"
+          },
+          "symmetric": true
+        }
+      },
+      "items": [
+        "item_2",
+        "item_0"
+      ]
+    },
+    {
+      "id": "loc_1",
+      "name": "Zona silenciosa",
+      "descriptions": [
+        "El monte continúa en esta parte",
+        "A diferencia de la parte anterior, esta zona está insonorizada y no se escucha ni siquiera un mínimo sonido"
+      ],
+      "connecting_locations": [],
+      "blocked_locations": {
+        "loc_2": {
+          "obstacle": {
+            "type": "Puzzle",
+            "name": "Puzzle",
+            "descriptions": [
+              "Un encanto mágico que genera un muro intraspasable",
+              "Mágicamente, al acercarse aparecen unas letras azules que explican cuál es el acertijo a resolver"
+            ],
+            "problem": "Hay que susurrar el nombre del río que baña la costa sur de la Banda Oriental",
+            "answer": "Rio de la Plata"
+          },
+          "symmetric": true
+        }
+      },
+      "items": []
+    },
+    {
+      "id": "loc_2",
+      "name": "Celda",
+      "descriptions": [
+        "Una celda cuadrada de dos metros cuadrados",
+        "La vegetación del monte ya ha ingresado al interior"
+      ],
+      "connecting_locations": [
+        "loc_1"
+      ],
+      "blocked_locations": {},
+      "items": []
+    }
+  ],
+  "items": [
+    {
+      "id": "item_0",
+      "name": "Estanque",
+      "descriptions": [
+        "Un estanque de agua cristalina",
+        "El agua es tan clara que funciona como un espejo"
+      ],
+      "gettable": false
+    },
+    {
+      "id": "item_1",
+      "name": "Guitarra",
+      "descriptions": [
+        "Una guitarra clásica con 6 cuerdas",
+        "Suena muy bien"
+      ],
+      "gettable": true
+    },
+    {
+      "id": "item_2",
+      "name": "Pinturas",
+      "descriptions": [
+        "Hay algo escrito con una pintura hecha con barro",
+        "Dice 'Hay que confiar en los poderes que se nos han otorgado"
+      ],
+      "gettable": false
+    },
+    {
+      "id": "item_3",
+      "name": "Un muro de llamas",
+      "descriptions": [
+        "Las llamas son fuertes y dan mucho calor",
+        "Tiene una altura de 3 metros",
+        "Es imposible cruzarlas, ni caminando, ni corriendo, ni saltando."
+      ],
+      "gettable": false
+    }
+  ],
+  "characters": [
+    {
+      "id": "char_1",
+      "name": "José Artigas",
+      "descriptions": [
+        "El héroe nacional de Uruguay",
+        "Está muy debilitado al estar tanto tiempo encerrado"
+      ],
+      "location": "loc_2",
+      "inventory": []
+    }
+  ],
+  "player": {
+    "id": "char_0",
+    "name": "Venancio",
+    "descriptions": [
+      "Un gaucho uruguayo de 40 años de edad",
+      "Pertenece a los soldados de Artigas",
+      "Tiene el poder mágico de invocar una ola gigante de agua con la que puede apagar fuegos o humedecer la tierra"
+    ],
+    "location": "loc_0",
+    "inventory": [
+      "item_1"
+    ]
+  },
+  "objective": {
+    "first": {
+      "type": "Character",
+      "id": "char_0"
+    },
+    "second": {
+      "type": "Character",
+      "id": "char_1"
+    }
+  }
+}

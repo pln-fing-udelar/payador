@@ -1,0 +1,140 @@
+{
+  "locations": [
+    {
+      "id": "loc_0",
+      "name": "Taller de pintura",
+      "descriptions": [
+        "Es el taller de pintura que la madre de Emma tiene en su casa"
+      ],
+      "connecting_locations": [
+        "loc_1"
+      ],
+      "blocked_locations": {},
+      "items": [
+        "item_3",
+        "item_4"
+      ]
+    },
+    {
+      "id": "loc_1",
+      "name": "Cocina",
+      "descriptions": [
+        "Es la cocina de la casa",
+        "No es enorme, pero tampoco es la cocina más chiquita del mundo",
+        "Por las ventanas entra mucha luz"
+      ],
+      "connecting_locations": [
+        "loc_0"
+      ],
+      "blocked_locations": {
+        "loc_2": {
+          "obstacle": {
+            "type": "Item",
+            "id": "item_0"
+          },
+          "symmetric": true
+        }
+      },
+      "items": []
+    },
+    {
+      "id": "loc_2",
+      "name": "Jardín",
+      "descriptions": [
+        "El jardín de la casa",
+        "Es relativamente chico, de unos 5 metros cuadrados"
+      ],
+      "connecting_locations": [
+        "loc_1"
+      ],
+      "blocked_locations": {},
+      "items": [
+        "item_2"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "item_0",
+      "name": "Candado",
+      "descriptions": [
+        "Un candado fuerte que tiene grabado un escudo de armas",
+        "Parece que no puede ser abierto con las manos"
+      ],
+      "gettable": true
+    },
+    {
+      "id": "item_1",
+      "name": "Llave",
+      "descriptions": [
+        "Una llave para abrir un candado",
+        "Es dorada",
+        "Tiene grabada la imagen de un extraño escudo de armas"
+      ],
+      "gettable": true
+    },
+    {
+      "id": "item_2",
+      "name": "Tortuga",
+      "descriptions": [
+        "Una tortuga pequeña",
+        "La mascota de Emma",
+        "Emma la llama 'Hojita'"
+      ],
+      "gettable": true
+    },
+    {
+      "id": "item_3",
+      "name": "Un martillo gris",
+      "descriptions": [
+        "Un martillo gris grande que puede ser usado para romper cosas",
+        "Es muy pesado"
+      ],
+      "gettable": true
+    },
+    {
+      "id": "item_4",
+      "name": "Un martillo verde",
+      "descriptions": [
+        "Un pequeño martillo verde",
+        "Es solamente un juguete y no se puede romper nada con él"
+      ],
+      "gettable": true
+    }
+  ],
+  "characters": [
+    {
+      "id": "char_1",
+      "name": "Laura",
+      "descriptions": [
+        "Una mujer de unos 45 años de edad",
+        "Es la madre de Emma",
+        "Es una artista que pinta al óleo"
+      ],
+      "location": "loc_0",
+      "inventory": [
+        "item_1"
+      ]
+    }
+  ],
+  "player": {
+    "id": "char_0",
+    "name": "Emma",
+    "descriptions": [
+      "Una adolescente de estatura promedio",
+      "Está buscando a su mascota 'Hojita'"
+    ],
+    "location": "loc_0",
+    "inventory": []
+  },
+  "objective": {
+    "first": {
+      "type": "Item",
+      "id": "item_2"
+    },
+    "second": {
+      "type": "Location",
+      "id": "loc_1"
+    }
+  }
+}

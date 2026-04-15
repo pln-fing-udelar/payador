@@ -1,0 +1,94 @@
+{
+  "locations": [
+    {
+      "id": "loc_0",
+      "name": "Candombe Street",
+      "descriptions": [
+        "A vibrant street filled with the sound of drums",
+        "Musicians practice their art here"
+      ],
+      "connecting_locations": [
+        "loc_1"
+      ],
+      "blocked_locations": {},
+      "items": [
+        "item_0"
+      ]
+    },
+    {
+      "id": "loc_1",
+      "name": "Market Square",
+      "descriptions": [
+        "A lively plaza where candombe gatherings happen"
+      ],
+      "connecting_locations": [
+        "loc_0"
+      ],
+      "blocked_locations": {},
+      "items": [
+        "item_1"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "item_0",
+      "name": "Rhythm Stick",
+      "descriptions": [
+        "A wooden stick used for candombe",
+        "It's worn but well-maintained"
+      ],
+      "gettable": true
+    },
+    {
+      "id": "item_1",
+      "name": "Repique drum",
+      "descriptions": [
+        "The middle-sized drum between the chico and piano, with a medium register"
+      ],
+      "gettable": true
+    }
+  ],
+  "characters": [
+    {
+      "id": "char_1",
+      "name": "Rosa",
+      "descriptions": [
+        "A graceful candombe dancer",
+        "She moves to the rhythm effortlessly",
+        "28 years old"
+      ],
+      "location": "loc_1",
+      "inventory": []
+    },
+    {
+      "id": "char_2",
+      "name": "Don Pedro",
+      "descriptions": [
+        "The local candombe elder",
+        "He knows all the traditional rhythms"
+      ],
+      "location": "loc_0",
+      "inventory": []
+    }
+  ],
+  "player": {
+    "id": "char_0",
+    "name": "Josefa",
+    "descriptions": [
+      "An enthusiastic candombe learner"
+    ],
+    "location": "loc_0",
+    "inventory": []
+  },
+  "objective": {
+    "first": {
+      "type": "Item",
+      "id": "item_1"
+    },
+    "second": {
+      "type": "Character",
+      "id": "char_2"
+    }
+  }
+}

@@ -1,0 +1,1 @@
+Raw playthroughs are saved in this directory as JSON files.

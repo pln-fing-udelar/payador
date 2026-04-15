@@ -1,0 +1,138 @@
+{
+  "locations": [
+    {
+      "id": "loc_0",
+      "name": "Clearing in the woods",
+      "descriptions": [
+        "A clearing in a eucalyptus forest near the Uruguay River",
+        "You can hear the sound of the animals that live in the trees of this forest."
+      ],
+      "connecting_locations": [],
+      "blocked_locations": {
+        "loc_1": {
+          "obstacle": {
+            "type": "Item",
+            "id": "item_0"
+          },
+          "symmetric": true
+        }
+      },
+      "items": [
+        "item_3",
+        "item_2"
+      ]
+    },
+    {
+      "id": "loc_1",
+      "name": "Silent zone",
+      "descriptions": [
+        "The forest continues in this part",
+        "Unlike the previous area, this area is very silent and not even the slightest sound can be heard."
+      ],
+      "connecting_locations": [],
+      "blocked_locations": {
+        "loc_2": {
+          "obstacle": {
+            "type": "Puzzle",
+            "name": "Puzzle",
+            "descriptions": [
+              "A strong magic is generating an impassable wall",
+              "Magically, as you get closer, some blue letters appear explaining what the riddle to solve is."
+            ],
+            "problem": "You have to whisper the name of the river located on the southern coast of the Banda Oriental",
+            "answer": "Rio de la Plata"
+          },
+          "symmetric": true
+        }
+      },
+      "items": []
+    },
+    {
+      "id": "loc_2",
+      "name": "Cell",
+      "descriptions": [
+        "A square cell of two square meters",
+        "The interior is full of plants that grew outside"
+      ],
+      "connecting_locations": [
+        "loc_1"
+      ],
+      "blocked_locations": {},
+      "items": []
+    }
+  ],
+  "items": [
+    {
+      "id": "item_0",
+      "name": "Wall of Fire",
+      "descriptions": [
+        "The flames are very hot",
+        "It's 3 metres high",
+        "It is impossible to cross them, neither walking, nor running, nor jumping."
+      ],
+      "gettable": false
+    },
+    {
+      "id": "item_1",
+      "name": "Guitar",
+      "descriptions": [
+        "A classic guitar with 6 strings",
+        "It sounds great"
+      ],
+      "gettable": true
+    },
+    {
+      "id": "item_2",
+      "name": "Pond",
+      "descriptions": [
+        "A pond full of crystal clear water",
+        "The water is so clear that it works like a mirror"
+      ],
+      "gettable": false
+    },
+    {
+      "id": "item_3",
+      "name": "Writings",
+      "descriptions": [
+        "There is something written on the wall.",
+        "It says 'You have to trust in the powers that have been given to you.'"
+      ],
+      "gettable": false
+    }
+  ],
+  "characters": [
+    {
+      "id": "char_1",
+      "name": "José Artigas",
+      "descriptions": [
+        "Uruguay's national hero",
+        "He is very weak after being locked up for so long."
+      ],
+      "location": "loc_2",
+      "inventory": []
+    }
+  ],
+  "player": {
+    "id": "char_0",
+    "name": "Venancio",
+    "descriptions": [
+      "A Uruguayan gaucho in his 40s",
+      "He belongs to the Artigas army",
+      "He has the magical power to summon a giant wave of water with which he can put out fires or moisten the ground."
+    ],
+    "location": "loc_0",
+    "inventory": [
+      "item_1"
+    ]
+  },
+  "objective": {
+    "first": {
+      "type": "Character",
+      "id": "char_0"
+    },
+    "second": {
+      "type": "Character",
+      "id": "char_1"
+    }
+  }
+}

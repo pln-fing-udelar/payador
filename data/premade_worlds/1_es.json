@@ -1,0 +1,124 @@
+{
+  "locations": [
+    {
+      "id": "loc_0",
+      "name": "Jardín",
+      "descriptions": [
+        "Un jardín hermoso",
+        "Hay una estatua en el centro"
+      ],
+      "connecting_locations": [
+        "loc_1"
+      ],
+      "blocked_locations": {
+        "loc_2": {
+          "obstacle": {
+            "type": "Puzzle",
+            "name": "puzzle",
+            "descriptions": [
+              "Hay un dibujo de un micrófono y debajo un letrero, con la premisa para abrir la puerta"
+            ],
+            "problem": "Para desbloquear esta puerta, hay que decir en voz alta la suma de 9 y 4.",
+            "answer": "La respuesta es 13 "
+          },
+          "symmetric": true
+        }
+      },
+      "items": [
+        "item_0"
+      ]
+    },
+    {
+      "id": "loc_1",
+      "name": "Cabaña",
+      "descriptions": [
+        "Una pequeña cabaña",
+        "Parece que nadie ha vivido acá por un tiempo"
+      ],
+      "connecting_locations": [
+        "loc_0"
+      ],
+      "blocked_locations": {},
+      "items": []
+    },
+    {
+      "id": "loc_2",
+      "name": "Hall de la Mansión",
+      "descriptions": [
+        "Un hall grande",
+        "Hay una enorme escalera principal"
+      ],
+      "connecting_locations": [
+        "loc_0"
+      ],
+      "blocked_locations": {},
+      "items": []
+    }
+  ],
+  "items": [
+    {
+      "id": "item_0",
+      "name": "Auto de juguete",
+      "descriptions": [
+        "Un pequeño auto de juguete de color púrpura",
+        "Luce como recién comprado"
+      ],
+      "gettable": true
+    },
+    {
+      "id": "item_1",
+      "name": "Manzana",
+      "descriptions": [
+        "Una fruta que puede ser comida",
+        "Es redonda y verde"
+      ],
+      "gettable": true
+    },
+    {
+      "id": "item_2",
+      "name": "Mate",
+      "descriptions": [
+        "Un mate clásico ¡listo para tomar!",
+        "Contiene algo de yerba",
+        "¡Puedes tomar esto para mejorar tu energía!"
+      ],
+      "gettable": true
+    }
+  ],
+  "characters": [
+    {
+      "id": "char_1",
+      "name": "Javier",
+      "descriptions": [
+        "Tiene una barba larga",
+        "Le encanta restaurar muebles"
+      ],
+      "location": "loc_2",
+      "inventory": [
+        "item_2"
+      ]
+    }
+  ],
+  "player": {
+    "id": "char_0",
+    "name": "Alicia",
+    "descriptions": [
+      "Está usando una falda larga",
+      "Le gusta cantar"
+    ],
+    "location": "loc_0",
+    "inventory": [
+      "item_1"
+    ]
+  },
+  "objective": {
+    "first": {
+      "type": "Item",
+      "id": "item_0"
+    },
+    "second": {
+      "type": "Character",
+      "id": "char_1"
+    }
+  }
+}

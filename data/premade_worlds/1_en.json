@@ -117,8 +117,8 @@
       "id": "item_2"
     },
     "second": {
-      "type": "Location",
-      "id": "loc_2"
+      "type": "Character",
+      "id": "char_1"
     }
   }
 }

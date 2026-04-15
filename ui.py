@@ -1,4 +1,5 @@
 import gradio as gr
+from config_loader import load_config
 
 
 def create_and_launch_interface(game_loop_fn, starting_narration):
@@ -11,6 +12,10 @@ def create_and_launch_interface(game_loop_fn, starting_narration):
     Returns:
         The Gradio Blocks interface object
     """
+    
+    # Load configuration for debug info setting
+    config_data = load_config()
+    show_debug_info = config_data['config'].getboolean('UI', 'ShowDebugInfo', fallback=False)
     
     # Wrapper function for Gradio interface with multiple outputs
     def chat_with_display(message, history):
@@ -33,14 +38,14 @@ def create_and_launch_interface(game_loop_fn, starting_narration):
         message_state = gr.State(value="")
         
         with gr.Row():
-            with gr.Column(scale=2):
+            with gr.Column(scale=2 if show_debug_info else 1):
                 chatbot = gr.Chatbot(
                     height=500,
                     value=[{"role": "assistant", "content": starting_narration.replace("<", r"\<").replace(">", r"\>")}],
                     label="Story"
                 )
                 
-            with gr.Column(scale=1):
+            with gr.Column(scale=1, visible=show_debug_info):
                 predicted_outcomes_display = gr.Textbox(
                     label="🛠️ Transformation Predictions 🛠️",
                     interactive=False,

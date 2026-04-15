@@ -1,4 +1,4 @@
-"""Load models to use them as a narrator and a common-sense oracle in the PAYADOR pipeline."""
+"""Load models to use them in the PAYADOR pipeline."""
 from google import genai
 from google.genai import types
 import requests

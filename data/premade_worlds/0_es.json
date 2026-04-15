@@ -1,0 +1,93 @@
+{
+  "locations": [
+    {
+      "id": "loc_0",
+      "name": "Calle Candombe",
+      "descriptions": [
+        "Una calle vibrante llena del sonido de los tambores",
+        "Los músicos practican su arte aquí"
+      ],
+      "connecting_locations": [
+        "loc_1"
+      ],
+      "blocked_locations": {},
+      "items": [
+        "item_0"
+      ]
+    },
+    {
+      "id": "loc_1",
+      "name": "Plaza del Mercado",
+      "descriptions": [
+        "Una plaza animada donde suceden encuentros de candombe"
+      ],
+      "connecting_locations": [
+        "loc_0"
+      ],
+      "blocked_locations": {},
+      "items": [
+        "item_1"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "item_0",
+      "name": "Palo de Ritmo",
+      "descriptions": [
+        "Un palo de madera usado para candombe",
+        "Está desgastado pero bien mantenido"
+      ],
+      "gettable": true
+    },
+    {
+      "id": "item_1",
+      "name": "Tambor Repique",
+      "descriptions": [
+        "El tambor de tamaño medio entre el chico y el piano, con un registro en el medio"
+      ],
+      "gettable": true
+    }
+  ],
+  "characters": [
+    {
+      "id": "char_1",
+      "name": "Rosa",
+      "descriptions": [
+        "Una bailarína de candombe graciosa",
+        "Se mueve al ritmo sin esfuerzo"
+      ],
+      "location": "loc_1",
+      "inventory": []
+    },
+    {
+      "id": "char_2",
+      "name": "Don Pedro",
+      "descriptions": [
+        "El anciano local de candombe",
+        "Conoce todos los ritmos tradicionales"
+      ],
+      "location": "loc_0",
+      "inventory": []
+    }
+  ],
+  "player": {
+    "id": "char_0",
+    "name": "Josefa",
+    "descriptions": [
+      "Una entusiasta aprendiz de candombe"
+    ],
+    "location": "loc_0",
+    "inventory": []
+  },
+  "objective": {
+    "first": {
+      "type": "Item",
+      "id": "item_1"
+    },
+    "second": {
+      "type": "Character",
+      "id": "char_2"
+    }
+  }
+}

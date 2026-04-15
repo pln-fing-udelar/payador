@@ -11,9 +11,9 @@ def prompt_describe_objective (objective, language:str = 'en'):
 
 def prompt_describe_objective_english (objective):
 
-    system_msg = """You have to provide an alternative way to narrate the objective given to you. You should always use simple language. 
+    system_msg = """You have to provide an alternative way to narrate the objective given to you. You should always use simple language and avoid poetic expressions.
     
-    Always put your generated narration between # characters. For example: # You have to get the <key> # or # You have to reach the <castle> #. The narration may be poetic yet clear, ensuring the player understands the instruction."""
+    Always put your generated narration between # characters. For example: # You have to get the <key> # or # You have to reach the <castle> #. The narration should be clear and direct, ensuring the player understands the instruction."""
 
     first_component_class = objective[0].__class__.__name__
     second_component_class = objective[1].__class__.__name__
@@ -34,9 +34,9 @@ def prompt_describe_objective_english (objective):
 
 def prompt_describe_objective_spanish (objective):
 
-    system_msg = """Tienes que dar una forma alternativa de narrar el objetivo que se te dará. Siempre usa lenguaje simple. 
+    system_msg = """Tienes que dar una forma alternativa de narrar el objetivo que se te dará. Siempre usa lenguaje simple y evita expresiones poéticas.
     
-    Pon siempre tu narración generada entre caracteres #. Por ejemplo: # Tienes que conseguir la <llave> # o # Tienes que llegar al <Castillo> #. La narración puede ser poética pero clara, asegurando que el jugador entienda la instrucción."""
+    Pon siempre tu narración generada entre caracteres #. Por ejemplo: # Tienes que conseguir la <llave> # o # Tienes que llegar al <Castillo> #. La narración debe ser clara y directa, asegurando que el jugador entienda la instrucción."""
 
     first_component_class = objective[0].__class__.__name__
     second_component_class = objective[1].__class__.__name__

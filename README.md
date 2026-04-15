@@ -1,32 +1,33 @@
 # PAYADOR
 This repository contains the code for the PAYADOR approach, presented in the ICCC'24 paper “[PAYADOR: A Minimalist Approach to Grounding Language Models on Structured Data for Interactive Storytelling and Role-playing Games](https://computationalcreativity.net/iccc24/papers/ICCC24_paper_152.pdf)”.
 
-TL;DR: The PAYADOR approach to the world-update problem in Interactive Storytelling (and Role-playing Games) consists of grounding Large Language Models to structured data to predict world-state transformations resulting from the player input.
+TL;DR: The PAYADOR approach to the world-update problem in Interactive Storytelling consists of grounding Large Language Models to structured data to predict world-state transformations resulting from the player input.
 
 Authors: [Santiago Góngora](https://scholar.google.com/citations?user=p1lKpmYAAAAJ), [Luis Chiruzzo](https://scholar.google.com/citations?user=C7c4uCsAAAAJ), [Gonzalo Méndez](https://scholar.google.com/citations?user=lC8QyOwAAAAJ) and [Pablo Gervás](https://scholar.google.com/citations?user=AcY-Y2gAAAAJ).
 
 
 ## 🗂️ Project structure
-The PAYADOR approach is intended to be easily adaptable for other research problems in Interactive Storytelling. Here we will briefly describe each module and add comments about how they should be modified for other cases.
+The PAYADOR approach is intended to be easily adaptable for other research problems in Interactive Storytelling. Here we will briefly describe each module.
 
-- `app.py` implements the main entry point and orchestrates the PAYADOR system.
-- `ui.py` implements a Gradio-based web interface for interactive storytelling and role-playing gameplay.
+### Core modules 
+- `app.py` implements the main loop of the PAYADOR system.
+- `ui.py` implements a Gradio-based web interface.
 - `world.py` implements the three components of the world model (Items, Characters and Locations) as well as the world itself. This module also implements the world state rendering in natural language and the update of the world state, key steps for the PAYADOR approach.
-    - ❗ If you are working for a different language than English, you will need to adapt the *render_world* and *parse_updates* methods.
-    - ❗ If you are working for other changes in the fictional world (e.g. mood during a conversation, like in the [Emolift paper](https://computationalcreativity.net/iccc2019/papers/iccc19-paper-44.pdf)) you will need to add another updates in the *parse_updates* method.
 - `config_loader.py` loads configuration settings from `config.ini` and initializes the LLM models.
-- `premade_worlds.py` includes simple ready-to-play worlds. Scenarios and world components are available in both English and Spanish.
 - `world_serializer.py` handles JSON serialization and deserialization of world states.
-- `playthroughs_processing.py` provides utilities for analyzing and processing game playthroughs saved in JSON format.
 - `models.py` loads and prompts the Gemini model.
-    - ❗ If you want to use a different model, you can add another class for it.
 - `prompts.py` contains the prompts for world-state transformation prediction and narrative generation.
-    - ❗ If you are working for a different language than English, you will need to adapt these prompts.
-    - ❗ If you are working for other types of world-state transformations in the fictional world, you will need to update the *prompt_world_update* function.
+
+### Data management
+- `data/` directory contains all data-related files and artifacts:
+  - `data/premade_worlds/` contains pre-configured world scenarios in JSON format (available in English and Spanish)
+  - `data/playthroughs/` stores game playthroughs and logs from player sessions
+- `data/premade_worlds.py` provides utilities to load pre-configured worlds from JSON files.
+- `data/playthroughs_processing.py` provides utilities for analyzing and processing game playthroughs saved in JSON format.
 
 ## ⚙️ Usage
 
-Please, follow these steps to get this code running.
+Please follow these steps to get this code running.
 
 ### Dependencies
 
@@ -45,7 +46,18 @@ conda activate payador
 
 ### Configuration
 
-The system uses a `config.ini` file to set the language and model names. You can adjust these settings as needed.
+The system uses a `config.ini` file to set some preferences. Here are the available configuration options:
+
+**[Options]**
+- `Language`: Game language (`es` for Spanish, `en` for English)
+- `WorldID`: ID of the pre-made world to load (available worlds: 0-3)
+
+**[UI]**
+- `ShowDebugInfo`: Display the debug information panel with transformation predictions and world state (true/false)
+
+**[Models]**
+- `NarrativeModel`: LLM model used for narrative generation
+- `ReasoningModel`: LLM model used for world-state transformation reasoning
 
 ### Gemini API key
 

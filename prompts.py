@@ -128,6 +128,8 @@ def prompt_world_update_spanish (world_state: str, input: str):
     (A) Presta atención a la descripción de los componentes y sus capacidades.
     (B) Si un pasaje está bloqueado, significa que el jugador debe desbloquearlo antes de poder acceder al lugar. Aunque el jugador te diga que va a acceder al lugar bloqueado, tienes que estar seguro de que está cumpliendo con lo pedido para permitirle desbloquear el acceso, por ejemplo usando una llave o resolviendo un puzzle.
     (C) No asumas que lo que dice el jugador siempre tiene sentido; quizás esas acciones intentan hacer algo que el mundo no lo permite.
+    (D) La entrada del jugador puede ser una ACCIÓN (que causa cambios en el mundo) o una PREGUNTA (que solicita información sobre el mundo). Cuando sea una pregunta, SOLO debes responder basándote en la información presente en el parámetro world_state. Si la información necesaria para responder la pregunta no está en world_state, responde en la narración de forma narrativa y manteniendo el rol de narrador (Game Master), sin romper el juego de rol. Por ejemplo, en lugar de decir "No sé", di algo como "El personaje no ha mencionado su edad" o "Eso no es algo que haya determinado aún". Para preguntas, todos los otros campos (moved_items, unblocked_locations, player_movement) deben estar vacíos/null.
+    (E) Cuando el jugador realiza una ACCIÓN NARRATIVA/SOCIAL que no causa cambios mecánicos en el mundo (como hablar con un personaje, complimentar a alguien, o realizar acciones descriptivas), debes responder con ROLEPLAY CREATIVO basado en las descripciones de los componentes en el world_state. Usa las características y descripciones del personaje para crear respuestas auténticas. NUNCA simplemente repitas lo que el jugador hizo; en su lugar, genera la reacción/respuesta del NPC o la continuación narrativa. Mantén consistencia con los hechos del world_state pero sé creativo dentro de esos límites.
     
     IMPORTANTE: Debes responder ÚNICAMENTE con un JSON válido sin ningún texto adicional. NO ENVUELVAS el JSON en bloques de código markdown (sin ```json ``` ni backticks). El JSON debe tener exactamente esta estructura:
     {
@@ -187,7 +189,32 @@ def prompt_world_update_spanish (world_state: str, input: str):
       "narration": "No pasa nada..."
     }
     
-    Recuerda: la narración debe describir los cambios detectados sin hacer avanzar la historia ni crear detalles no incluidos en el estado del mundo. Puedes responder preguntas del jugador sobre objetos, personajes o el lugar en el que se encuentra."""
+    Ejemplo 7 (El jugador hace una pregunta - la información está disponible en world_state):
+    {
+      "moved_items": [],
+      "unblocked_locations": [],
+      "player_movement": null,
+      "narration": "Puedes ver una mesa de madera, una llave oxidada, y una puerta."
+    }
+    
+    Ejemplo 8 (El jugador hace una pregunta - la información NO está en world_state):
+    {
+      "moved_items": [],
+      "unblocked_locations": [],
+      "player_movement": null,
+      "narration": "El personaje no ha mencionado su edad."
+    }
+    
+    Ejemplo 9 (El jugador interactúa socialmente - acción narrativa sin cambios mecánicos):
+    Entrada del jugador: "Miro a Rosa y le digo 'Cómo estás?'"
+    {
+      "moved_items": [],
+      "unblocked_locations": [],
+      "player_movement": null,
+      "narration": "Rosa sonríe calurosamente. 'Hola!. Es lindo verte por aquí.'"
+    }
+    
+    Recuerda: la narración debe describir los cambios detectados sin hacer avanzar la historia ni crear detalles no incluidos en el estado del mundo. Cuando respondas preguntas, SOLO usa información del world_state proporcionado. Para acciones narrativas/sociales, usa las descripciones del world_state para crear respuestas de NPCs auténticas y creativas. Puedes responder preguntas del jugador sobre objetos, personajes o el lugar en el que se encuentra, pero SOLO si esa información está presente en el world_state."""
     
     user_msg = f"""Expresa los cambios en el mundo en formato JSON, teniendo en cuenta que el jugador ingresó esta entrada "{input}" a partir de este estado del mundo:
     
@@ -202,6 +229,8 @@ def prompt_world_update_english (world_state: str, input: str):
     (A) Pay attention to the description of the components and their capabilities.
     (B) If a passage is blocked, then the player must unblock it before being able to reach the place. Even if the player tells you that they are going to access the locked location, you have to be sure that they are complying with what is required to allow them to unlock the access, for example by using a key or solving a puzzle.
     (C) Do not assume that the player input always makes sense; maybe those actions try to do something that the world does not allow.
+    (D) The player input can be either an ACTION (which causes changes in the world) or a QUESTION (which requests information about the world). When it is a question, you should ONLY answer based on the information present in the world_state parameter. If the information needed to answer the question is not in the world_state, respond in the narration in a narrative manner while maintaining your role as storyteller (Game Master), without breaking character. For example, instead of saying "I don't know", say something like "The character hasn't mentioned his age" or "That's not something I've determined yet". For questions, all other fields (moved_items, unblocked_locations, player_movement) should be empty arrays/null.
+    (E) When the player performs a NARRATIVE/SOCIAL ACTION that does not cause mechanical changes in the world (such as talking to a character, complimenting someone, or performing descriptive actions), you should respond with CREATIVE ROLEPLAY based on the component descriptions in world_state. Use the characteristics and descriptions of the character to create authentic NPC responses. NEVER simply repeat what the player did; instead, generate the NPC's reaction or narrative continuation. Maintain consistency with the facts in world_state but be creative within those boundaries.
     
     IMPORTANT: You must respond ONLY with valid JSON without any additional text. DO NOT wrap the JSON in markdown code blocks (no ```json ``` or backticks). The JSON must have exactly this structure:
     {
@@ -261,7 +290,32 @@ def prompt_world_update_english (world_state: str, input: str):
       "narration": "Nothing happened..."
     }
     
-    Remember: the narration should describe the changes detected without moving the story forward and without creating details not included in the world state. You can answer the player's questions about objects, characters, or the place they are in."""
+    Example 7 (The player asks a question - information is available in world_state):
+    {
+      "moved_items": [],
+      "unblocked_locations": [],
+      "player_movement": null,
+      "narration": "You can see a wooden table, a rusty key, and a door."
+    }
+    
+    Example 8 (The player asks a question - information is NOT available in world_state):
+    {
+      "moved_items": [],
+      "unblocked_locations": [],
+      "player_movement": null,
+      "narration": "The character hasn't mentioned his age."
+    }
+    
+    Example 9 (The player interacts socially - narrative action with no mechanical changes):
+    Player input: "I look at Rosa and say 'How are you?'"
+    {
+      "moved_items": [],
+      "unblocked_locations": [],
+      "player_movement": null,
+      "narration": "Rosa smiles warmly. 'Hello! It's nice to see you here.'"
+    }
+    
+    Remember: the narration should describe the changes detected without moving the story forward and without creating details not included in the world state. When answering questions, ONLY use information from the provided world_state. For narrative/social actions, use the descriptions in world_state to create authentic and creative NPC responses. You can answer the player's questions about objects, characters, or the place they are in, but ONLY if that information is present in the world_state."""
     
     user_msg = f"""Give the changes in the world in JSON format, after this player input "{input}" on this world state:
     

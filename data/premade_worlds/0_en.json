@@ -17,7 +17,7 @@
     },
     {
       "id": "loc_1",
-      "name": "Plaza del Mercado",
+      "name": "Market Square",
       "descriptions": [
         "A lively plaza where candombe gatherings happen"
       ],
@@ -55,7 +55,8 @@
       "name": "Rosa",
       "descriptions": [
         "A graceful candombe dancer",
-        "She moves to the rhythm effortlessly"
+        "She moves to the rhythm effortlessly",
+        "28 years old"
       ],
       "location": "loc_1",
       "inventory": []

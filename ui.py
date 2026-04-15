@@ -33,6 +33,7 @@ def create_and_launch_interface(game_loop_fn, starting_narration):
     # Instantiate the Gradio app with custom layout
     with gr.Blocks(title="PAYADOR") as gradio_interface:
         gr.Markdown("# PAYADOR")
+        gr.Markdown("[https://github.com/pln-fing-udelar/payador](https://github.com/pln-fing-udelar/payador)")
         
         # Hidden state to store the message while processing
         message_state = gr.State(value="")
@@ -64,6 +65,13 @@ def create_and_launch_interface(game_loop_fn, starting_narration):
         )
         
         # Handle chat submission
+        def add_user_message(message, chat_history):
+            """Add the user message to chat history immediately for visual feedback."""
+            if not message or message.strip() == "":
+                return chat_history
+            chat_history.append({"role": "user", "content": message})
+            return chat_history
+        
         def process_input(message, chat_history):
             if not message or message.strip() == "":
                 return chat_history, "", ""
@@ -71,8 +79,7 @@ def create_and_launch_interface(game_loop_fn, starting_narration):
             # Call the game loop and get responses
             agent_response, predicted, world_state = chat_with_display(message, chat_history)
             
-            # Update chat history
-            chat_history.append({"role": "user", "content": message})
+            # Add only the assistant response (user message already added)
             chat_history.append({"role": "assistant", "content": agent_response})
             
             return chat_history, predicted, world_state
@@ -80,11 +87,15 @@ def create_and_launch_interface(game_loop_fn, starting_narration):
         # Submit button triggers the processing
         submit_button = gr.Button("Send", variant="primary")
         
-        # Event chain: save message -> clear textbox -> process
+        # Event chain: save message -> add user to chat -> clear textbox -> process LLM
         submit_button.click(
             fn=lambda msg: msg,
             inputs=[textbox],
             outputs=[message_state]
+        ).then(
+            fn=add_user_message,
+            inputs=[message_state, chatbot],
+            outputs=[chatbot]
         ).then(
             fn=lambda: "",
             outputs=[textbox],
@@ -100,6 +111,10 @@ def create_and_launch_interface(game_loop_fn, starting_narration):
             fn=lambda msg: msg,
             inputs=[textbox],
             outputs=[message_state]
+        ).then(
+            fn=add_user_message,
+            inputs=[message_state, chatbot],
+            outputs=[chatbot]
         ).then(
             fn=lambda: "",
             outputs=[textbox],

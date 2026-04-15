@@ -4,6 +4,7 @@ from google.genai import types
 import requests
 import os
 from dotenv import load_dotenv
+from pydantic import BaseModel, Field, field_validator
 
 load_dotenv()
 
@@ -99,3 +100,33 @@ class GeminiModel():
 
 
         # return self.model.generate_content(system_msg + "\n\n" + user_msg, safety_settings=self.safety_settings).text
+
+
+class MovedObject(BaseModel):
+    """Represents an object moved during world update."""
+    name: str = Field(..., description="Name of the object being moved")
+    destination: str = Field(..., description="Destination location, character name, or 'Inventory'")
+
+
+class WorldUpdatePrediction(BaseModel):
+    """Structured prediction of world state changes from LLM output."""
+    moved_items: list[MovedObject] = Field(default_factory=list, description="List of objects that were moved")
+    unblocked_locations: list[str] = Field(default_factory=list, description="List of previously blocked passages that are now accessible")
+    player_movement: str | None = Field(default=None, description="New location if player moved, None otherwise")
+    narration: str = Field(..., description="Narration describing the world changes")
+
+    @field_validator('player_movement')
+    @classmethod
+    def validate_player_movement(cls, v: str | None) -> str | None:
+        """Ensure player_movement is not an empty string."""
+        if v == "":
+            return None
+        return v
+
+    @field_validator('narration')
+    @classmethod
+    def validate_narration(cls, v: str) -> str:
+        """Ensure narration is not empty."""
+        if not v or not v.strip():
+            raise ValueError("Narration cannot be empty")
+        return v.strip()

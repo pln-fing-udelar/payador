@@ -1,34 +1,46 @@
-import gradio as gr
 import re
 import time
 import json
 import os
 import jsonpickle
-import configparser
 import premade_worlds
 
-from models import get_llm
+from models import WorldUpdatePrediction
 from prompts import prompt_narrate_current_scene, prompt_world_update, prompt_describe_objective
+from config_loader import load_config
+from ui import create_and_launch_interface
 
 PATH_GAMELOGS = 'playthroughs/raw'
 
-# config
-config = configparser.ConfigParser()
-config.read('config.ini')
+def clean_json_response(response: str) -> str:
+    """Strip markdown code blocks from LLM JSON response if present.
+    
+    Handles formats like:
+    - ```json {...} ```
+    - ``` {...} ```
+    - Any leading/trailing whitespace and backticks
+    """
+    response = response.strip()
+    
+    # Remove markdown code block wrappers
+    if response.startswith('```'):
+        # Remove starting ``` and optional language identifier (e.g., ```json)
+        response = re.sub(r'^```(?:json)?\s*', '', response)
+        # Remove ending ```
+        response = re.sub(r'\s*```$', '', response)
+        response = response.strip()
+    
+    return response
 
-# language of the game
-language = config['Options']['Language']
-
-# Initialize the model 
-reasoning_model_name = config['Models']['ReasoningModel']
-narrative_model_name = config['Models']['NarrativeModel']
-reasoning_model = get_llm(reasoning_model_name)
-narrative_model = get_llm(narrative_model_name)
-
-# Create a name for the log file
-timestamp = time.time()
-today =  time.gmtime(timestamp)
-log_filename =  f"{today[0]}_{today[1]}_{today[2]}_{str(int(time.time()))[-5:]}.json"
+# Load configuration and initialize models
+config_data = load_config()
+config = config_data['config']
+language = config_data['language']
+reasoning_model = config_data['reasoning_model']
+narrative_model = config_data['narrative_model']
+log_filename = config_data['log_filename']
+reasoning_model_name = config_data['reasoning_model_name']
+narrative_model_name = config_data['narrative_model_name']
 
 # The game loop
 def game_loop(message, history):
@@ -61,15 +73,23 @@ def game_loop(message, history):
     system_msg_update, user_msg_update = prompt_world_update(world.render_world(language=language), message, language=language)
     response_update = reasoning_model.prompt_model(system_msg=system_msg_update, user_msg=user_msg_update)
 
-    # Show the detected changes in the fictional world
-    try:
-        predicted_outcomes = re.sub(r'#([^#]*?)#','',response_update) 
-        last_predicted_outcomes = f"🛠️ Predicted outcomes of the player input 🛠️\n> Player input: {message}\n{predicted_outcomes}\n"
-        print(last_predicted_outcomes)
-        game_log_dictionary[number_of_turns]["predicted_outcomes"] = predicted_outcomes
+    # Clean any markdown wrappers from the response
+    response_update = clean_json_response(response_update)
 
+    # Parse JSON response into Pydantic model
+    try:
+        world_update = WorldUpdatePrediction.model_validate_json(response_update)
+        
+        # Show the detected changes in the fictional world
+        predicted_outcomes_text = world_update.model_dump_json(indent=2)
+        last_predicted_outcomes = f"Player input: {message}\n{predicted_outcomes_text}\n"
+        print(f"🛠️ Predicted outcomes of the player input 🛠️\n{last_predicted_outcomes}")
+        game_log_dictionary[number_of_turns]["predicted_outcomes"] = predicted_outcomes_text
+        
     except Exception as e:
-        print (f"Error: {e}")
+        print(f"Error parsing world update response: {e}")
+        print(f"Raw response: {response_update}")
+        return "Error processing your input. Please try again."
     
     # World update
     world.update(response_update)
@@ -77,7 +97,7 @@ def game_loop(message, history):
     game_log_dictionary[number_of_turns]["updated_rendered_world_state"] = world.render_world(language=language)
     
     if last_player_position is not world.player.location:
-    #Narrate new scene
+        # Narrate new scene
         last_player_position = world.player.location
         system_msg_new_scene, user_msg_new_scene = prompt_narrate_current_scene(
             world.render_world(language=language),
@@ -89,15 +109,12 @@ def game_loop(message, history):
         world.player.visited_locations[world.player.location.name]+=[new_scene_narration] 
         answer += f"\n{new_scene_narration}\n\n"
     else:
-    #Narrate actions in the current scene
-        try:
-            answer+= f"{re.findall(r'#([^#]*?)#',response_update)[0]}\n"
-        except Exception as e:
-            print (f"Error: {e}")
+        # Narrate actions in the current scene using the narration from the world update
+        answer += f"{world_update.narration}\n"
 
 
-    last_world_state = f"\n🌎 World state 🌍\n>Player input: {message}\n{world.render_world(language=language)}\n"
-    print(last_world_state)
+    last_world_state = world.render_world(language=language)
+    print(f"\n🌎 World state 🌍\n>Player input: {message}\n{last_world_state}")
 
     if world.check_objective():
         if language=='es':
@@ -157,74 +174,7 @@ except (IndexError, AttributeError) as e:
 with open(os.path.join(PATH_GAMELOGS,log_filename), 'w', encoding='utf-8') as f:
     json.dump(game_log_dictionary, f, ensure_ascii=False, indent=4)
 
-# Wrapper function for Gradio interface with multiple outputs
-def chat_with_display(message, history):
-    agent_response = game_loop(message, history)
-    return agent_response, last_predicted_outcomes, last_world_state
-
-#Instantiate the Gradio app with custom layout
-with gr.Blocks(title="PAYADOR") as gradio_interface:
-    gr.Markdown("# PAYADOR")
-    
-    with gr.Row():
-        with gr.Column(scale=2):
-            chatbot = gr.Chatbot(
-                height=500,
-                value=[{"role": "assistant", "content": starting_narration_for_log.replace("<",r"\<").replace(">", r"\>")}],
-                label="Story"
-            )
-            
-        with gr.Column(scale=1):
-            predicted_outcomes_display = gr.Textbox(
-                label="🛠️",
-                interactive=False,
-                lines=10
-            )
-            world_state_display = gr.Textbox(
-                label="🌎",
-                interactive=False,
-                lines=10
-            )
-    
-    textbox = gr.Textbox(
-        placeholder="What do you want to do?",
-        label="Your Action",
-        container=True
-    )
-    
-    # Handle chat submission
-    def process_input(message, chat_history):
-        if not message:
-            return chat_history, "", ""
-        
-        # Call the game loop and get responses
-        agent_response, predicted, world_state = chat_with_display(message, chat_history)
-        
-        # Update chat history
-        chat_history.append({"role": "user", "content": message})
-        chat_history.append({"role": "assistant", "content": agent_response})
-        
-        return chat_history, predicted, world_state
-    
-    # Submit button triggers the processing
-    submit_button = gr.Button("Send", variant="primary")
-    submit_button.click(
-        fn=process_input,
-        inputs=[textbox, chatbot],
-        outputs=[chatbot, predicted_outcomes_display, world_state_display]
-    ).then(
-        lambda: "",
-        outputs=textbox
-    )
-    
-    # Allow Enter key to submit
-    textbox.submit(
-        fn=process_input,
-        inputs=[textbox, chatbot],
-        outputs=[chatbot, predicted_outcomes_display, world_state_display]
-    ).then(
-        lambda: "",
-        outputs=textbox
-    )
+# Instantiate the Gradio app
+gradio_interface = create_and_launch_interface(game_loop, starting_narration_for_log)
 
 gradio_interface.launch(inbrowser=False)

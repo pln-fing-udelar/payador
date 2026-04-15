@@ -6,6 +6,7 @@ and methods to update according to the detected changes by a language model.
 
 import re
 from typing import Type
+from models import WorldUpdatePrediction
 
 
 class Component:
@@ -400,61 +401,64 @@ class World:
     """Does the changes in the world according to the output of the language model.
 
     The considered transformations are:
-      - an item has been moved
-      - a location is now reachable
-      - the position of the player has changed.
+      - moved items
+      - unblocked locations
+      - player movement
+      
+    Args:
+      updates: JSON string from LLM containing structured world update prediction
     """
-    self.parse_moved_objects(updates)
-    self.parse_blocked_passages(updates)
-    self.parse_location_change(updates)
+    try:
+      # Parse JSON response into Pydantic model
+      world_update = WorldUpdatePrediction.model_validate_json(updates)
+      
+      # Process moved items
+      for moved_object in world_update.moved_items:
+        self._process_moved_object(moved_object.name, moved_object.destination)
+      
+      # Process unblocked locations
+      for passage in world_update.unblocked_locations:
+        try:
+          self.locations[self.player.location.name].unblock_passage(self.locations[passage])
+        except Exception as e:
+          print(f"Error unblocking passage '{passage}': {e}")
+      
+      # Process player movement
+      if world_update.player_movement is not None:
+        try:
+          self.player.move(self.locations[world_update.player_movement])
+        except Exception as e:
+          print(f"Error moving player to '{world_update.player_movement}': {e}")
+    
+    except Exception as e:
+      print(f"Error parsing world update: {e}")
 
-  def parse_moved_objects (self, updates: str) -> None:
-    """Parse the output of the language model to update the position of objects.
-
+  def _process_moved_object(self, object_name: str, destination: str) -> None:
+    """Process a single moved object.
+    
     There are three cases:
-      - the player has a new item
-      - the player gave an item to other character
-      - the player dropped an item.
+      - the player has a new item (destination is Inventory or player name)
+      - the player gave an item to other character (destination is character name)
+      - the player dropped an item (destination is location name)
     """
-    parsed_objects = re.findall(r".*Moved object:\s*(.+)",updates)
-    if 'None' not in parsed_objects:
-      parsed_objects_split = re.findall(r"<[^<>]*?>.*?<[^<>]*?>",parsed_objects[0])
-      for parsed_object in parsed_objects_split:
-        pair = re.findall(r"<([^<>]*?)>.*?<([^<>]*?)>",parsed_object)
-        try:
-          world_item = self.items[pair[0][0]]
-          
-          if pair[0][1] in ['Inventory', 'Inventario', 'Player',  'Jugador', self.player.name]: #(save_item case)
-            item_location = [character for character in list(self.characters.values()) if world_item in character.inventory]
-            item_location += [location for location in list(self.locations.values()) if world_item in location.items]
-            self.player.save_item(world_item, item_location[0])
-
-          elif pair[0][1] in self.characters: #(give_item case)
-            self.player.give_item(self.characters[pair[0][1]], world_item)
-          
-          else: #(drop_item case)
-            self.player.drop_item(world_item)
-        except Exception as e:
-          print(e)
-
-  def parse_blocked_passages (self, updates: str) -> None:
-    """Parse the output of the language model to update the reachable locations."""
-    parsed_blocked_passages = re.findall(r".*Blocked passages now available:\s*(.+)",updates)
-    if 'None' not in parsed_blocked_passages:
-      parsed_blocked_passages_split = re.findall(r"<([^<>]*?)>",parsed_blocked_passages[0])
-      for parsed_passage in parsed_blocked_passages_split:
-        try:
-          self.locations[self.player.location.name].unblock_passage(self.locations[parsed_passage])
-        except Exception as e:
-          print (e)
-
-  def parse_location_change (self, updates: str) -> None:
-    """Parse the output of the language model to update the position of the player."""
-    parsed_location_change = re.findall(r".*Your location changed: (.+)",updates)
-    if "None" not in parsed_location_change:
-      parsed_location_change_split = re.findall(r"<([^<>]*?)>",parsed_location_change[0])
-      try:
-        self.player.move(self.locations[parsed_location_change_split[0]])
-      except Exception as e:
-        print(e)
+    try:
+      world_item = self.items[object_name]
+      
+      # Case 1: Item moved to inventory
+      if destination in ['Inventory', 'Inventario', 'Player', 'Jugador', self.player.name]:
+        item_location = [character for character in list(self.characters.values()) if world_item in character.inventory]
+        item_location += [location for location in list(self.locations.values()) if world_item in location.items]
+        if item_location:
+          self.player.save_item(world_item, item_location[0])
+      
+      # Case 2: Item given to a character
+      elif destination in self.characters:
+        self.player.give_item(self.characters[destination], world_item)
+      
+      # Case 3: Item dropped at a location
+      else:
+        self.player.drop_item(world_item)
+    
+    except Exception as e:
+      print(f"Error processing moved object '{object_name}' to '{destination}': {e}")
 

@@ -13,14 +13,14 @@ def get_world(arg: str, language: str = 'en') -> World:
     """Load a world from JSON based on the world ID and language.
     
     Args:
-        arg: World ID ('0', '1', '2', '3', '4', '5', etc.)
+        arg: World ID ('0', '1', '2', '3')
         language: Language code ('en' or 'es')
     
     Returns:
         A World object loaded from the corresponding JSON file
     """
     lang_suffix = 'es' if language == 'es' else 'en'
-    world_id = arg if arg in ['0', '1', '2', '4', '5'] else '0'
+    world_id = arg if arg in ['0', '1', '2', '3'] else '0'
     
     # Get the directory where the worlds JSON files are located
     current_dir = os.path.dirname(os.path.abspath(__file__))

@@ -16,7 +16,8 @@ def world_to_dict(world: World) -> Dict[str, Any]:
     for character in world.characters.values():
         all_items_set.update(character.inventory)
     all_items_set.update(world.player.inventory)
-    # Also collect items that might be obstacles in blocked passages
+    
+    # Also collect items that might be obstacles in locked locations
     for location in world.locations.values():
         for blocked_loc, obstacle, _ in location.blocked_locations.values():
             if isinstance(obstacle, Item):
@@ -171,7 +172,7 @@ def dict_to_world(data: Dict[str, Any]) -> World:
             if location_map[blocked_id] not in location.connecting_locations:
                 location.connecting_locations.append(location_map[blocked_id])
     
-    # Third pass: Set up blocked passages
+    # Third pass: Set up unblocked locations
     for loc_data in data["locations"]:
         location = location_map[loc_data["id"]]
         

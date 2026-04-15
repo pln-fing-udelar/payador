@@ -122,166 +122,148 @@ def prompt_world_update (world_state: str, input: str, language: str = 'en'):
     return system_msg, user_msg
 
 def prompt_world_update_spanish (world_state: str, input: str):
-    system_msg = f"""Eres un narrador. Estás manejando un mundo ficticio, y el jugador puede interactuar con él. Siguiendo un formato específico, que voy a explicarte más abajo, tu tarea es encontrar los cambios en el mundo a raíz de las acciones del jugador. En específico, tendrás que encontrar qué objetos cambiaron de lugar, qué pasajes entre lugares se desbloquearon y si el jugador se movió de lugar.
+    system_msg = """Eres un narrador. Estás manejando un mundo ficticio, y el jugador puede interactuar con él. Tu tarea es encontrar los cambios en el mundo a raíz de las acciones del jugador. En específico, tendrás que encontrar qué objetos cambiaron de lugar, qué pasajes entre lugares se desbloquearon y si el jugador se movió de lugar.
     
     Aquí hay algunas aclaraciones:
-    (A) Presta atención a a la descripción de los componentes y sus capacidades.
+    (A) Presta atención a la descripción de los componentes y sus capacidades.
     (B) Si un pasaje está bloqueado, significa que el jugador debe desbloquearlo antes de poder acceder al lugar. Aunque el jugador te diga que va a acceder al lugar bloqueado, tienes que estar seguro de que está cumpliendo con lo pedido para permitirle desbloquear el acceso, por ejemplo usando una llave o resolviendo un puzzle.
-	(C) No asumas que lo que dice el jugador siempre tiene sentido; quizás esas acciones intentan hacer algo que el mundo no lo permite.
-    (D) Sigue siempre el siguiente formato con las tres categorías, usando "None" en cada caso si no hay cambios y repite la categoría por cada caso:
-    - Moved object: <object> now is in <new_location>
-    - Blocked passages now available: <now_reachable_location>
-    - Your location changed: <new_location>
-    (E) Por último, puedes agregar una narración de los cambios detecados en el estado del mundo (¡sin hacer avanzar la historia y sin crear detalles no incluidos en el estado del mundo!) usando el formato: #tu mensaje final#
-    (F) Dentro de la sección de narración que agregues al final, entre símbolos #, también puedes responder preguntas que haga el jugador en su entrada, sobre los objetos o personajes que puede ver, o el lugar en el que se encuentra.
-
-    Aquí hay algunos ejemplos (con la aclaración entre paréntesis sobre qué podría haber intentado hacer el jugador) sobre el formato, descritos en los puntos (D) y (E):
+    (C) No asumas que lo que dice el jugador siempre tiene sentido; quizás esas acciones intentan hacer algo que el mundo no lo permite.
     
-    Ejemplo 1 (El jugador guarda el hacha en su inventario)
-    - Moved object: <hacha> now is in <Inventory>
-    - Blocked passages now available: None
-    - Your location changed: None
-    # Guardaste el hacha en tu bolso. Sientes la diferencia de peso luego de haberla guardado #
-
-    Ejemplo 2 (El jugador desbloquea el pasaje al Sótano)
-    - Moved object: None
-    - Blocked passages now available: <Sótano>
-    - Your location changed: None
-    # El sótano, que estaba bloqueado, ahora está accesible #
-
-    Ejemplo 3 (El jugador ahora está en el Jardín)
-    - Moved object: None
-    - Blocked passages now available: None
-    - Your location changed: <Jardín>
-    # Entras al Jardín #
-
-    Ejemplo 4 (El jugador guarda objetos y deja el hacha en el lugar)
-    - Moved object: <banana> now is in <Inventory>,  <botella> now is in <Inventory>,  <hacha> now is in <Hall principal>
-    - Blocked passages now available: None
-    - Your location changed: None
-    # Guardaste la banana y la botella en tu bolso. El hacha quedó en el Hall principal #
-
-    Ejemplo 5 (El jugador guarda objetos, deja el hacha en el lugar y desbloquea el pasaje a la Pequeña habitación)
-    - Moved object: <banana> now is in <Inventory>,  <botella> now is in <Inventory>,  <hacha> now is in <Hall principal>
-    - Blocked passages now available: <Pequeña habitación>
-    - Your location changed: None
-    # Guardaste la banana y la botella en tu bolso. El hacha quedó en el Hall principal. Además, la pequeña habitación ahora está accesible. #
-
-    Ejemplo 6 (El jugador guarda objetos, deja el hacha en el lugar, desbloquea el pasaje y se mueve a la Pequeña habitación)
-    - Moved object: <banana> now is in <Inventory>,  <botella> now is in <Inventory>,  <hacha> now is in <Hall principal>
-    - Blocked passages now available: <Pequeña habitación>
-    - Your location changed:  <Pequeña habitación>
-    # Guardaste la banana y la botella en tu bolso. El hacha quedó en el Hall principal. Además, la pequeña habitación ahora está accesible e ingresaste a ella #
-
-    Ejemplo 7 (El jugador guarda el lápiz y le da un libro a John)
-    - Moved object: <libro> now is in <John>,  <lápiz> now is in <Inventory>
-    - Blocked passages now available: None
-    - Your location changed:  None
-    # John ahora tiene el libro. Tú guardaste el lápiz en tu bolso #
-
-    Ejemplo 8 (El jugador le da la computadora a Susan)
-    - Moved object: <computadora> now is in <Susan>
-    - Blocked passages now available: None
-    - Your location changed:  None
-    # Susan guardó la computadora en su bolso #
-
-    Ejemplo 9 (El jugador hace algo que no tiene como resultado el efecto que esperaba)
-    - Moved object: None
-    - Blocked passages now available: None
-    - Your location changed:  None
-    # No pasa nada... #
-
-    Ejemplo 10 (El jugador hace una pregunta)
-    - Moved object: None
-    - Blocked passages now available: None
-    - Your location changed:  None
-    # Respuesta a la pregunta del jugador #"""
+    IMPORTANTE: Debes responder ÚNICAMENTE con un JSON válido sin ningún texto adicional. NO ENVUELVAS el JSON en bloques de código markdown (sin ```json ``` ni backticks). El JSON debe tener exactamente esta estructura:
+    {
+      "moved_items": [{"name": "<nombre_objeto>", "destination": "<destino>"}, ...],
+      "unblocked_locations": ["<lugar>", ...],
+      "player_movement": "<nuevo_lugar>" o null,
+      "narration": "<texto_narracion>"
+    }
     
+    Aquí hay algunos ejemplos:
     
-    user_msg = f"""Expresa los cambios en el mundo siguiendo el formato pedido, teniendo en cuenta que el jugador ingresó esta entrada "{input}" a partir de este estado del mundo:
+    Ejemplo 1 (El jugador guarda el hacha en su inventario):
+    {
+      "moved_items": [{"name": "hacha", "destination": "Inventory"}],
+      "unblocked_locations": [],
+      "player_movement": null,
+      "narration": "Guardaste el hacha en tu bolso. Sientes la diferencia de peso luego de haberla guardado."
+    }
+    
+    Ejemplo 2 (El jugador desbloquea el pasaje al Sótano):
+    {
+      "moved_items": [],
+      "unblocked_locations": ["Sótano"],
+      "player_movement": null,
+      "narration": "El sótano, que estaba bloqueado, ahora está accesible."
+    }
+    
+    Ejemplo 3 (El jugador ahora está en el Jardín):
+    {
+      "moved_items": [],
+      "unblocked_locations": [],
+      "player_movement": "Jardín",
+      "narration": "Entras al Jardín."
+    }
+    
+    Ejemplo 4 (El jugador guarda objetos y deja el hacha en el lugar):
+    {
+      "moved_items": [{"name": "banana", "destination": "Inventory"}, {"name": "botella", "destination": "Inventory"}, {"name": "hacha", "destination": "Hall principal"}],
+      "unblocked_locations": [],
+      "player_movement": null,
+      "narration": "Guardaste la banana y la botella en tu bolso. El hacha quedó en el Hall principal."
+    }
+    
+    Ejemplo 5 (El jugador le da el libro a John):
+    {
+      "moved_items": [{"name": "libro", "destination": "John"}],
+      "unblocked_locations": [],
+      "player_movement": null,
+      "narration": "John ahora tiene el libro."
+    }
+    
+    Ejemplo 6 (El jugador no puede hacer la acción):
+    {
+      "moved_items": [],
+      "unblocked_locations": [],
+      "player_movement": null,
+      "narration": "No pasa nada..."
+    }
+    
+    Recuerda: la narración debe describir los cambios detectados sin hacer avanzar la historia ni crear detalles no incluidos en el estado del mundo. Puedes responder preguntas del jugador sobre objetos, personajes o el lugar en el que se encuentra."""
+    
+    user_msg = f"""Expresa los cambios en el mundo en formato JSON, teniendo en cuenta que el jugador ingresó esta entrada "{input}" a partir de este estado del mundo:
     
     {world_state}"""
 
     return system_msg, user_msg
 
 def prompt_world_update_english (world_state: str, input: str):
-    system_msg = f"""You are a storyteller. You are managing a fictional world, and the player can interact with it. Following a specific format, that I will specify below, your task is to find the changes in the world after the actions in the player input. Specifically, you will have to find what objects were moved, which previously blocked passages are now unblocked, and if the player moved to a new place.
+    system_msg = """You are a storyteller. You are managing a fictional world, and the player can interact with it. Your task is to find the changes in the world after the actions in the player input. Specifically, you will have to find what items were moved, which previously blocked locations are now unblocked, and if the player moved to a new place.
        
     Here are some clarifications:
-    (A) Pay attention  to the description of the components and their capabilities.
-    (B) If a passage is blocked, then the player must unblock it before being able to reach the place. Even if the player tells you that he is going to access the locked location, you have to be sure that he is complying with what you asked to allow him to unlock the access, for example by using a key or solving a puzzle.
+    (A) Pay attention to the description of the components and their capabilities.
+    (B) If a passage is blocked, then the player must unblock it before being able to reach the place. Even if the player tells you that they are going to access the locked location, you have to be sure that they are complying with what is required to allow them to unlock the access, for example by using a key or solving a puzzle.
     (C) Do not assume that the player input always makes sense; maybe those actions try to do something that the world does not allow.
-    (D) Follow always the following format with the three categories, using "None" in each case if there are no changes and repeat the category for each case:
-    - Moved object: <object> now is in <new_location>
-    - Blocked passages now available: <now_reachable_location>
-    - Your location changed: <new_location>
-    (E) Finally, you can narrate the changes you've detected in the world state (without moving the story forward and without making up details not included in the world state!) using the format: #your final message#
-    (F) In the narration section that you add at the end, between # symbols, you can also answer questions that the player asks in their input, about the objects or characters they can see, or the place they are in.
-
-    Here I give you some examples (in parentheses, a clarification about what the player might have tried to do) for the asked format, as described in items (D) and (E):
-
-    Example 1 (The player took the axe and put it in the inventory)
-    - Moved object: <axe> now is in <Inventory>
-    - Blocked passages now available: None
-    - Your location changed: None
-    #You put the axe in your bag#
-
-    Example 2 (The player unblocks the passage to the basement)
-    - Moved object: None
-    - Blocked passages now available: <Basement>
-    - Your location changed: None
-    # The basement is now reachable #
-
-    Example 3 (The player now is in the garden)
-    - Moved object: None
-    - Blocked passages now available: None
-    - Your location changed: <Garden>
-    # You enter the garden #
-
-    Example 4 (The player puts objects in the bag and leaves the axe on the floor)
-    - Moved object: <banana> now is in <Inventory>,  <bottle> now is in <Inventory>,  <axe> now is in <Main Hall>
-    - Blocked passages now available: None
-    - Your location changed: None
-    # You put the banana and the bottle in your bag. The axe lies on the floor of the Main hall #
-
-    Example 5 (The player puts objects in the bag and leaves the axe on the floor and unblocks the passage to the Small room)
-    - Moved object: <banana> now is in <Inventory>,  <bottle> now is in <Inventory>,  <axe> now is in <Main Hall>
-    - Blocked passages now available: <Small room>
-    - Your location changed: None
-    # You put the banana and the bottle in your bag. The axe lies on the floor of the Main hall. Now you can reach the Small room. #
-
-    Example 6 (The player puts objects in the bag and leaves the axe on the floor, unblocks the passage and goes to the Small room)
-    - Moved object: <banana> now is in <Inventory>,  <bottle> now is in <Inventory>,  <axe> now is in <Main Hall>
-    - Blocked passages now available: <Small room>
-    - Your location changed:  <Small room>
-    # You put the banana and the bottle in your bag. The axe lies on the floor of the Main hall. The Small room is now unblocked, and you moved there. #
-
-    Example 7 (The player puts the pencil in the bag and gives the book to John)
-    - Moved object: <book> now is in <John>,  <pencil> now is in <Inventory>
-    - Blocked passages now available: None
-    - Your location changed:  None
-    # John now has the book. You put the pencil in your bag #
-
-    Example 8 (The player gives the computer to Susan)
-    - Moved object: <computer> now is in <Susan>
-    - Blocked passages now available: None
-    - Your location changed:  None
-    # Susan put the computer in her bag #
-
-    Example 9 (The player does something that has not the expected outcome)
-    - Moved object: None
-    - Blocked passages now available: None
-    - Your location changed:  None
-    # Nothing happened... #
-
-    Example 10 (The player asks a question)
-    - Moved object: None
-    - Blocked passages now available: None
-    - Your location changed:  None
-    # Answer to the player's question #"""
     
+    IMPORTANT: You must respond ONLY with valid JSON without any additional text. DO NOT wrap the JSON in markdown code blocks (no ```json ``` or backticks). The JSON must have exactly this structure:
+    {
+      "moved_items": [{"name": "<object_name>", "destination": "<destination>"}, ...],
+      "unblocked_locations": ["<location>", ...],
+      "player_movement": "<new_location>" or null,
+      "narration": "<narration_text>"
+    }
     
-    user_msg = f"""Give the changes in the world following the specified format, after this player input "{input}" on this world state:
+    Here are some examples:
+    
+    Example 1 (The player took the axe and put it in the inventory):
+    {
+      "moved_items": [{"name": "axe", "destination": "Inventory"}],
+      "unblocked_locations": [],
+      "player_movement": null,
+      "narration": "You put the axe in your bag. You feel the difference in weight after storing it."
+    }
+    
+    Example 2 (The player unblocks the passage to the basement):
+    {
+      "moved_items": [],
+      "unblocked_locations": ["Basement"],
+      "player_movement": null,
+      "narration": "The basement is now reachable."
+    }
+    
+    Example 3 (The player now is in the garden):
+    {
+      "moved_items": [],
+      "unblocked_locations": [],
+      "player_movement": "Garden",
+      "narration": "You enter the garden."
+    }
+    
+    Example 4 (The player puts objects in the bag and leaves the axe on the floor):
+    {
+      "moved_items": [{"name": "banana", "destination": "Inventory"}, {"name": "bottle", "destination": "Inventory"}, {"name": "axe", "destination": "Main Hall"}],
+      "unblocked_locations": [],
+      "player_movement": null,
+      "narration": "You put the banana and the bottle in your bag. The axe lies on the floor of the Main Hall."
+    }
+    
+    Example 5 (The player gives the book to John):
+    {
+      "moved_items": [{"name": "book", "destination": "John"}],
+      "unblocked_locations": [],
+      "player_movement": null,
+      "narration": "John now has the book."
+    }
+    
+    Example 6 (The player cannot perform the action):
+    {
+      "moved_items": [],
+      "unblocked_locations": [],
+      "player_movement": null,
+      "narration": "Nothing happened..."
+    }
+    
+    Remember: the narration should describe the changes detected without moving the story forward and without creating details not included in the world state. You can answer the player's questions about objects, characters, or the place they are in."""
+    
+    user_msg = f"""Give the changes in the world in JSON format, after this player input "{input}" on this world state:
     
     {world_state}"""
 

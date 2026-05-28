@@ -5,7 +5,7 @@ import re
 import numpy
 from typing import Dict
 
-PATH_PLAYTHROUGHS = 'playthroughs/'
+PATH_PLAYTHROUGHS = 'data/playthroughs/'
 DATE_FORMAT = "%a %b %d %H:%M:%S %Y"
 
 

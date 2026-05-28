@@ -1,5 +1,5 @@
 import gradio as gr
-from config_loader import load_config
+from utils.config_loader import load_config
 
 
 def create_and_launch_interface(game_loop_fn, starting_narration):

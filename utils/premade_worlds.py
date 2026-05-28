@@ -5,7 +5,7 @@ from JSON files rather than creating them programmatically.
 """
 
 import os
-from world_serializer import load_world_from_json
+from utils.world_serializer import load_world_from_json
 from world import World
 
 
@@ -23,8 +23,9 @@ def get_world(arg: str, language: str = 'en') -> World:
     world_id = arg if arg in ['0', '1', '2', '3'] else '0'
     
     # Get the directory where the worlds JSON files are located
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    worlds_dir = os.path.join(current_dir, 'premade_worlds')
+    # Navigate from utils/ to data/premade_worlds/
+    current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    worlds_dir = os.path.join(current_dir, 'data', 'premade_worlds')
     json_path = os.path.join(worlds_dir, f"{world_id}_{lang_suffix}.json")
     
     return load_world_from_json(json_path)

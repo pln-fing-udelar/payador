@@ -59,8 +59,8 @@ conda activate payador
 The system uses a `config.ini` file to set some preferences. Here are the available configuration options:
 
 **[Options]**
-- `Language`: Game language (`es` for Spanish, `en` for English)
-- `WorldID`: ID of the pre-made world to load (available worlds: 0-3)
+- `SystemLanguage`: System language for narrative generation (`es` for Spanish, `en` for English).
+- `WorldID`: Filename of the pre-made world to load (e.g., `0_es.json`, `1_en.json`). 
 
 **[UI]**
 - `ShowDebugInfo`: Display the debug information panel with transformation predictions and world state (true/false)

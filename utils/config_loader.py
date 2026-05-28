@@ -21,7 +21,7 @@ def load_config():
     config.read('config.ini')
     
     # Language of the game
-    language = config['Options']['Language']
+    language = config['Options']['SystemLanguage']
     
     # Model names from config
     reasoning_model_name = config['Models']['ReasoningModel']

@@ -602,7 +602,7 @@
                     </div>
 
                     <div class="button-group">
-                        <button type="submit" class="btn btn-save">💾 Save World</button>
+                        <button type="submit" class="btn btn-save">💾 Save as New World</button>
                         <button type="reset" class="btn btn-reset">↺ Reset Form</button>
                     </div>
                 </form>
@@ -683,7 +683,7 @@
                 worlds.forEach(world => {
                     const item = document.createElement('div');
                     item.className = 'world-item';
-                    item.onclick = (e) => editWorld(world.id, e);
+                    item.onclick = (e) => editWorld(world.id, world.language, e);
                     
                     const langLabel = world.language === 'es' ? 'ES' : 'EN';
                     item.innerHTML = `
@@ -741,8 +741,11 @@
             updateLocationDropdowns();
         }
 
-        async function editWorld(worldId, event) {
+        async function editWorld(worldId, language, event) {
             try {
+                if (language === 'en' || language === 'es') {
+                    currentLanguage = language;
+                }
                 const response = await fetch(`${API_URL}/worlds/${worldId}?language=${currentLanguage}`);
                 const data = await response.json();
                 

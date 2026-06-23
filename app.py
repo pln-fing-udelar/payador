@@ -3,11 +3,11 @@ import time
 import json
 import os
 import jsonpickle
-from data import premade_worlds
+from utils import premade_worlds
 
 from models import WorldUpdatePrediction
 from prompts import prompt_narrate_current_scene, prompt_world_update, prompt_describe_objective
-from config_loader import load_config
+from utils.config_loader import load_config
 from ui import create_and_launch_interface
 
 PATH_GAMELOGS = 'data/playthroughs/raw'

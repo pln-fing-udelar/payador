@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #ddd;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: transparent;
+            color: white;
+            padding: 40px 20px 20px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+            color: #aaa;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 1024px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Workspace View - Base Layout */
+        .workspace-view {
+            display: none;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .workspace-view.active {
+            display: grid;
+        }
+
+        /* World List Panel */
+        .worlds-panel {
+            background: rgba(102, 126, 234, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .worlds-panel h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .world-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .world-item:hover {
+            background: rgba(102, 126, 234, 0.15);
+            border-color: #667eea;
+        }
+
+        .world-item.selected {
+            background: rgba(102, 126, 234, 0.25);
+            border-color: #667eea;
+        }
+
+        .world-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .world-item-title {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .world-item-meta {
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .btn-new-world {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .btn-new-world:hover {
+            background: #5568d3;
+        }
+
+        /* Form Panel */
+        .form-panel {
+            background: rgba(102, 126, 234, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+            min-width: 0;
+        }
+
+        .form-panel h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+        }
+
+        .form-section h3 {
+            color: #aef;
+            font-size: 1.1em;
+            margin-bottom: 12px;
+            border-left: 3px solid #667eea;
+            padding-left: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #ddd;
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: #ddd;
+            border-radius: 4px;
+            font-family: 'Poppins', sans-serif;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        /* Dynamic Rows */
+        .dynamic-rows {
+            margin-bottom: 15px;
+        }
+
+        .row-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .row-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .row-item-name {
+            font-weight: 600;
+            color: #667eea;
+            flex: 1;
+        }
+
+        .btn-remove-row {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: background 0.2s;
+        }
+
+        .btn-remove-row:hover {
+            background: #c0392b;
+        }
+
+        .btn-add-row {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: background 0.2s;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn-add-row:hover {
+            background: #229954;
+        }
+
+        .row-fields {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        .btn-save {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #5568d3;
+        }
+
+        .btn-reset {
+            background: #7f8c8d;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #6c7a7d;
+        }
+
+        /* Messages */
+        .message {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.success {
+            background: rgba(39, 174, 96, 0.2);
+            border: 1px solid #27ae60;
+            color: #90ee90;
+        }
+
+        .message.error {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            color: #ff6b6b;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .descriptions-help {
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 3px;
+            font-style: italic;
+        }
+
+        /* Main View */
+        .main-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 100px;
+        }
+
+        .main-view h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .main-buttons {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn-main {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 0.2s;
+            min-width: 250px;
+        }
+
+        .btn-main:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Workspace View */
+        .workspace-view {
+            display: none;
+        }
+
+        .workspace-view.active {
+            display: grid;
+        }
+
+        /* Single column for create mode */
+        .workspace-view.create-mode {
+            grid-template-columns: 1fr;
+        }
+
+        .workspace-view.create-mode .worlds-panel {
+            display: none;
+        }
+
+        .workspace-view.create-mode .form-panel {
+            max-height: none;
+        }
+
+        /* Empty state message */
+        .empty-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            text-align: center;
+            color: #999;
+            font-size: 1.1em;
+        }
+
+        .empty-state.hidden {
+            display: none;
+        }
+
+        .form-content {
+            display: block;
+        }
+
+        .form-content.hidden {
+            display: none;
+        }
+
+        .back-button {
+            background: #7f8c8d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: background 0.2s;
+            margin-bottom: 15px;
+        }
+
+        .back-button:hover {
+            background: #6c7a7d;
+        }
+
+        /* Language Container */
+        .language-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .language-container.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>World Manager</h1>
+            <p>Create or Update PAYADOR worlds</p>
+        </header>
+
+        <!-- Main View -->
+        <div class="main-view" id="mainView">
+            <div class="main-buttons">
+                <button class="btn-main" onclick="enterCreateMode()">➕ Create world</button>
+                <button class="btn-main" onclick="enterBrowseMode()">📖 Browse worlds</button>
+            </div>
+        </div>
+
+        <!-- Workspace View -->
+        <div class="workspace-view" id="workspaceView">
+            <!-- Worlds List Panel -->
+            <div class="worlds-panel">
+                <h2>Worlds</h2>
+                <div id="worldsList"></div>
+                <button class="btn-new-world" onclick="createNewWorld()">+ New World</button>
+            </div>
+
+            <!-- Form Panel -->
+            <div class="form-panel">
+                <button class="back-button" onclick="backToMainView()">← Back to Main Menu</button>
+                <div class="empty-state" id="emptyState">Select a world to edit from the left panel</div>
+                <div class="form-content hidden" id="formContent">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 id="formTitle" style="margin: 0;">Create New World</h2>
+                        <div class="language-container hidden" id="languageContainer">
+                            <label for="languageSelect" style="margin-right: 10px; font-weight: 600;">Language:</label>
+                            <select id="languageSelect" onchange="changeLanguage()" style="padding: 6px 12px; border-radius: 4px; border: 1px solid #667eea; background: rgba(102, 126, 234, 0.1); color: #ddd; cursor: pointer;">
+                                <option value="en">English</option>
+                                <option value="es">Español</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div id="messageContainer"></div>
+                </div>
+
+                <form id="worldForm" onsubmit="saveWorld(event)">
+                    <!-- Player Section -->
+                    <div class="form-section">
+                        <h3>Player Configuration</h3>
+                        <div class="form-group">
+                            <label for="playerName">Player Name *</label>
+                            <input type="text" id="playerName" required>
+                            <input type="hidden" id="playerId" value="char_0">
+                        </div>
+                        <div class="form-group">
+                            <label for="playerLocation">Starting Location ID *</label>
+                            <input type="text" id="playerLocation" placeholder="e.g., loc_0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="playerDescriptions">Player Descriptions</label>
+                            <textarea id="playerDescriptions" placeholder="Enter descriptions separated by newlines"></textarea>
+                            <div class="descriptions-help">Enter each description on a new line</div>
+                        </div>
+                    </div>
+
+                    <!-- Locations Section -->
+                    <div class="form-section">
+                        <h3>Locations</h3>
+                        <button type="button" class="btn-add-row" onclick="addLocation()">+ Add Location</button>
+                        <div id="locationsList" class="dynamic-rows"></div>
+                    </div>
+
+                    <!-- Items Section -->
+                    <div class="form-section">
+                        <h3>Items</h3>
+                        <button type="button" class="btn-add-row" onclick="addItem()">+ Add Item</button>
+                        <div id="itemsList" class="dynamic-rows"></div>
+                    </div>
+
+                    <!-- Characters Section -->
+                    <div class="form-section">
+                        <h3>Characters (NPCs)</h3>
+                        <button type="button" class="btn-add-row" onclick="addCharacter()">+ Add Character</button>
+                        <div id="charactersList" class="dynamic-rows"></div>
+                    </div>
+
+                    <!-- Objective Section -->
+                    <div class="form-section">
+                        <h3>Objective (Optional)</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div>
+                                <label for="objectiveFirstType">First Target Type</label>
+                                <select id="objectiveFirstType">
+                                    <option value="">-- None --</option>
+                                    <option value="Item">Item</option>
+                                    <option value="Location">Location</option>
+                                    <option value="Character">Character</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="objectiveFirstId">First Target ID</label>
+                                <input type="text" id="objectiveFirstId" placeholder="e.g., item_0">
+                            </div>
+                            <div>
+                                <label for="objectiveSecondType">Second Target Type</label>
+                                <select id="objectiveSecondType">
+                                    <option value="">-- None --</option>
+                                    <option value="Item">Item</option>
+                                    <option value="Location">Location</option>
+                                    <option value="Character">Character</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="objectiveSecondId">Second Target ID</label>
+                                <input type="text" id="objectiveSecondId" placeholder="e.g., char_1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-save">💾 Save as New World</button>
+                        <button type="reset" class="btn btn-reset">↺ Reset Form</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5001/api';
+        let currentEditId = null;
+        let currentLanguage = 'en';
+        let currentMode = 'main'; // 'main', 'create', 'edit'
+        let locationCounter = 0;
+        let itemCounter = 0;
+        let characterCounter = 0;
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            showMainView();
+        });
+
+        function showMainView() {
+            currentMode = 'main';
+            document.getElementById('mainView').style.display = 'flex';
+            const workspaceView = document.getElementById('workspaceView');
+            workspaceView.classList.remove('active');
+            workspaceView.classList.remove('create-mode');
+            currentEditId = null;
+            currentLanguage = 'en';
+        }
+
+        function enterCreateMode() {
+            currentMode = 'create';
+            document.getElementById('mainView').style.display = 'none';
+            const workspaceView = document.getElementById('workspaceView');
+            workspaceView.classList.add('active');
+            workspaceView.classList.add('create-mode');
+            document.getElementById('languageContainer').classList.remove('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('formContent').classList.remove('hidden');
+            createNewWorld();
+        }
+
+        function enterBrowseMode() {
+            currentMode = 'edit';
+            document.getElementById('mainView').style.display = 'none';
+            const workspaceView = document.getElementById('workspaceView');
+            workspaceView.classList.add('active');
+            workspaceView.classList.remove('create-mode');
+            document.getElementById('languageContainer').classList.add('hidden');
+            document.getElementById('emptyState').classList.remove('hidden');
+            const formContent = document.getElementById('formContent');
+            formContent.classList.add('hidden');
+            formContent.style.display = 'none';
+            document.getElementById('worldForm').style.display = 'none';
+            loadWorlds();
+        }
+
+        function backToMainView() {
+            showMainView();
+        }
+
+        function changeLanguage() {
+            currentLanguage = document.getElementById('languageSelect').value;
+            if (currentMode === 'edit') {
+                loadWorlds();
+            }
+        }
+
+        async function loadWorlds() {
+            try {
+                const response = await fetch(`${API_URL}/worlds?language=${currentLanguage}`);
+                const worlds = await response.json();
+                
+                const list = document.getElementById('worldsList');
+                list.innerHTML = '';
+                
+                worlds.forEach(world => {
+                    const item = document.createElement('div');
+                    item.className = 'world-item';
+                    item.onclick = (e) => editWorld(world.id, world.language, e);
+                    
+                    const langLabel = world.language === 'es' ? 'ES' : 'EN';
+                    item.innerHTML = `
+                        <div class="world-item-header">
+                            <div>
+                                <div class="world-item-title">${world.player_name} <span style="font-size: 0.85em; color: #999;">(${world.filename})</span></div>
+                                <div class="world-item-meta">ID: ${world.id} | ${langLabel} | Locations: ${world.location_count} | NPCs: ${world.character_count}</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    list.appendChild(item);
+                });
+            } catch (error) {
+                showMessage(`Error loading worlds: ${error.message}`, 'error');
+            }
+        }
+
+        function updateLocationDropdowns() {
+            // Get all location IDs from the current form
+            const locationIds = Array.from(document.querySelectorAll('#locationsList .location-id')).map(el => el.value);
+            
+            // Update each location's connecting dropdown
+            document.querySelectorAll('.location-connecting').forEach((select, index) => {
+                const currentLocation = locationIds[index];
+                const selectedValues = Array.from(select.selectedOptions).map(opt => opt.value);
+                
+                select.innerHTML = '';
+                locationIds.forEach(locId => {
+                    if (locId !== currentLocation) {  // Can't connect to itself
+                        const option = document.createElement('option');
+                        option.value = locId;
+                        option.textContent = locId;
+                        option.selected = selectedValues.includes(locId);
+                        select.appendChild(option);
+                    }
+                });
+            });
+            updateItemLocationDropdowns(document.getElementById('playerId').value);
+        }
+
+        function updateItemLocationDropdowns(playerId = 'char_0') {
+            // Get all location IDs and their names from the current form
+            const locations = Array.from(document.querySelectorAll('#locationsList .row-item')).map(locItem => ({
+                id: locItem.querySelector('.location-id').value,
+                name: locItem.querySelector('.location-name').value || 'Unnamed Location'
+            }));
+            
+            // Get all character IDs and their names from the current form
+            const characters = Array.from(document.querySelectorAll('#charactersList .row-item')).map(charItem => ({
+                id: charItem.querySelector('.character-id').value,
+                name: charItem.querySelector('.character-name').value || 'Unnamed Character'
+            }));
+            
+            // Also include the player character (using dynamic player ID)
+            const playerName = document.getElementById('playerName').value || 'Player';
+            characters.unshift({
+                id: playerId,
+                name: playerName
+            });
+            
+            // Update each item's location dropdown
+            document.querySelectorAll('.item-location').forEach(select => {
+                const selectedValue = select.value;
+                
+                select.innerHTML = '<option value="">— Select location or character —</option>';
+                
+                // Add locations
+                locations.forEach(loc => {
+                    const option = document.createElement('option');
+                    option.value = loc.id;
+                    option.textContent = '📍 ' + loc.name;
+                    option.selected = selectedValue === loc.id;
+                    select.appendChild(option);
+                });
+                
+                // Add characters (including player)
+                characters.forEach(char => {
+                    const option = document.createElement('option');
+                    option.value = char.id;
+                    option.textContent = '📦 ' + char.name + "'s Inventory";
+                    option.selected = selectedValue === char.id;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        function createNewWorld() {
+            currentEditId = null;
+            document.getElementById('formTitle').textContent = 'Create New World';
+            document.getElementById('worldForm').reset();
+            document.getElementById('locationsList').innerHTML = '';
+            document.getElementById('itemsList').innerHTML = '';
+            document.getElementById('charactersList').innerHTML = '';
+            
+            locationCounter = 0;
+            itemCounter = 0;
+            characterCounter = 0;
+            
+            // Add at least one location
+            addLocation();
+            updateLocationDropdowns();
+            updateItemLocationDropdowns();
+        }
+
+        async function editWorld(worldId, language, event) {
+            try {
+                if (language === 'en' || language === 'es') {
+                    currentLanguage = language;
+                }
+                const response = await fetch(`${API_URL}/worlds/${worldId}?language=${currentLanguage}`);
+                const data = await response.json();
+                
+                currentEditId = worldId;
+                document.getElementById('formTitle').textContent = `Edit World #${worldId}`;
+                
+                // Hide empty state and show form
+                document.getElementById('emptyState').classList.add('hidden');
+                const formContent = document.getElementById('formContent');
+                formContent.classList.remove('hidden');
+                formContent.style.display = 'block';
+                document.getElementById('worldForm').style.display = 'block';
+                
+                // Populate player data
+                document.getElementById('playerName').value = data.player_name || '';
+                document.getElementById('playerId').value = data.player_id || 'char_0';
+                document.getElementById('playerLocation').value = data.player_location || 'loc_0';
+                document.getElementById('playerDescriptions').value = (data.player_descriptions || []).join('\n');
+                
+                // Clear and populate locations
+                document.getElementById('locationsList').innerHTML = '';
+                locationCounter = 0;
+                (data.locations || []).forEach(loc => {
+                    const locId = document.getElementById('locationsList').children.length;
+                    addLocation(loc.id, loc.name, (loc.descriptions || []).join('\n'), loc.connecting_locations || [], loc.blocked_locations || {});
+                });
+                
+                // Populate location options in all location selects
+                const locationsList = (data.locations || []).map(loc => loc.id);
+                document.querySelectorAll('.location-connecting').forEach(select => {
+                    select.innerHTML = '';
+                    locationsList.forEach(locId => {
+                        const option = document.createElement('option');
+                        option.value = locId;
+                        option.textContent = locId;
+                        select.appendChild(option);
+                    });
+                });
+                
+                // Select the appropriate options for each location
+                let locIndex = 0;
+                document.querySelectorAll('#locationsList .row-item').forEach(locItem => {
+                    const locData = (data.locations || [])[locIndex];
+                    if (locData && locData.connecting_locations) {
+                        const select = locItem.querySelector('.location-connecting');
+                        locData.connecting_locations.forEach(connLocId => {
+                            const option = select.querySelector(`option[value="${connLocId}"]`);
+                            if (option) option.selected = true;
+                        });
+                    }
+                    locIndex++;
+                });
+                
+                // Clear and populate characters BEFORE items (so item location dropdown has correct character list)
+                document.getElementById('charactersList').innerHTML = '';
+                characterCounter = 0;
+                (data.characters || []).forEach(char => {
+                    addCharacter(char.id, char.name, (char.descriptions || []).join('\n'), char.location);
+                });
+                
+                // Clear and populate items (with skipDropdownUpdate flag for performance)
+                document.getElementById('itemsList').innerHTML = '';
+                itemCounter = 0;
+                (data.items || []).forEach(item => {
+                    addItem(item.id, item.name, (item.descriptions || []).join('\n'), item.gettable, item.location_id || null, true);
+                });
+                // Update dropdown once after all items are loaded with correct character list and player ID
+                updateItemLocationDropdowns(document.getElementById('playerId').value);
+                
+                // Restore item location values from stored data attributes
+                document.querySelectorAll('#itemsList .row-item').forEach(itemRow => {
+                    const locationId = itemRow.dataset.locationId;
+                    if (locationId) {
+                        const select = itemRow.querySelector('.item-location');
+                        select.value = locationId;
+                    }
+                });
+                
+                // Populate objective
+                document.getElementById('objectiveFirstType').value = data.objective_first_type || '';
+                document.getElementById('objectiveFirstId').value = data.objective_first_id || '';
+                document.getElementById('objectiveSecondType').value = data.objective_second_type || '';
+                document.getElementById('objectiveSecondId').value = data.objective_second_id || '';
+                
+                // Highlight selected world
+                document.querySelectorAll('.world-item').forEach(item => item.classList.remove('selected'));
+                if (event?.target) {
+                    event.target.closest('.world-item')?.classList.add('selected');
+                }
+            } catch (error) {
+                showMessage(`Error loading world: ${error.message}`, 'error');
+            }
+        }
+
+        async function saveWorld(event) {
+            event.preventDefault();
+            
+            try {
+                // Gather form data
+                const formData = {
+                    player_name: document.getElementById('playerName').value,
+                    player_id: document.getElementById('playerId').value,
+                    player_location: document.getElementById('playerLocation').value,
+                    player_descriptions: document.getElementById('playerDescriptions').value
+                        .split('\n')
+                        .map(d => d.trim())
+                        .filter(d => d),
+                    locations: gatherLocations(),
+                    items: gatherItems(),
+                    characters: gatherCharacters(),
+                    objective_first_type: document.getElementById('objectiveFirstType').value || null,
+                    objective_first_id: document.getElementById('objectiveFirstId').value || null,
+                    objective_second_type: document.getElementById('objectiveSecondType').value || null,
+                    objective_second_id: document.getElementById('objectiveSecondId').value || null
+                };
+                
+                // Validation
+                if (!formData.player_name.trim()) {
+                    showMessage('Player name is required', 'error');
+                    return;
+                }
+                if (!formData.player_location.trim()) {
+                    showMessage('Player location is required', 'error');
+                    return;
+                }
+                if (formData.locations.length === 0) {
+                    showMessage('At least one location is required', 'error');
+                    return;
+                }
+                
+                // Save
+                const url = currentEditId
+                    ? `${API_URL}/worlds/${currentEditId}?language=${currentLanguage}`
+                    : `${API_URL}/worlds?language=${currentLanguage}`;
+                const method = currentEditId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    showMessage(result.error || 'Error saving world', 'error');
+                    return;
+                }
+                
+                showMessage(result.message, 'success');
+                if (!currentEditId) {
+                    // After creating, return to main view
+                    setTimeout(() => showMainView(), 1500);
+                } else {
+                    // After editing, reload the worlds list
+                    loadWorlds();
+                }
+            } catch (error) {
+                showMessage(`Error saving world: ${error.message}`, 'error');
+            }
+        }
+
+        function addLocation(id = null, name = '', descriptions = '', connectingLocations = [], blockedLocations = {}) {
+            const locId = id || `loc_${locationCounter++}`;
+            const list = document.getElementById('locationsList');
+            
+            const item = document.createElement('div');
+            item.className = 'row-item';
+            item.innerHTML = `
+                <div class="row-item-header">
+                    <div class="row-item-name">${name || '(New Location)'}</div>
+                    <button type="button" class="btn-remove-row" onclick="this.closest('.row-item').remove(); updateLocationDropdowns();">Remove</button>
+                </div>
+                <div class="row-fields">
+                    <div>
+                        <label>ID</label>
+                        <input type="text" value="${locId}" readonly class="location-id">
+                    </div>
+                    <div>
+                        <label>Name</label>
+                        <input type="text" placeholder="Location name" value="${name}" class="location-name" onchange="updateRowHeader(this)">
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label>Descriptions</label>
+                        <textarea placeholder="Enter descriptions separated by newlines" class="location-descriptions">${descriptions}</textarea>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label>Connecting Locations (reachable from here)</label>
+                        <select multiple class="location-connecting" style="height: 80px;">
+                            <option value="" disabled>Select connected locations...</option>
+                        </select>
+                        <div class="descriptions-help">Hold Ctrl/Cmd to select multiple locations</div>
+                    </div>
+                </div>
+            `;
+            
+            list.appendChild(item);
+            updateLocationDropdowns();
+        }
+
+        function addItem(id = null, name = '', descriptions = '', gettable = true, location_id = null, skipDropdownUpdate = false) {
+            const itemId = id || `item_${itemCounter++}`;
+            const list = document.getElementById('itemsList');
+            
+            const item = document.createElement('div');
+            item.className = 'row-item';
+            // Store location_id as data attribute for later restoration after dropdown options are populated
+            if (location_id) {
+                item.dataset.locationId = location_id;
+            }
+            item.innerHTML = `
+                <div class="row-item-header">
+                    <div class="row-item-name">${name || '(New Item)'}</div>
+                    <button type="button" class="btn-remove-row" onclick="this.closest('.row-item').remove()">Remove</button>
+                </div>
+                <div class="row-fields">
+                    <div>
+                        <label>ID</label>
+                        <input type="text" value="${itemId}" readonly class="item-id">
+                    </div>
+                    <div>
+                        <label>Name</label>
+                        <input type="text" placeholder="Item name" value="${name}" class="item-name" onchange="updateRowHeader(this)">
+                    </div>
+                    <div>
+                        <label>Location</label>
+                        <select class="item-location">
+                            <option value="" ${!location_id ? 'selected' : ''}>— Select location or character —</option>
+                        </select>
+                    </div>
+                    <div class="checkbox-label">
+                        <input type="checkbox" class="item-gettable" ${gettable ? 'checked' : ''}>
+                        <label style="margin: 0;">Can be taken by player</label>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label>Descriptions</label>
+                        <textarea placeholder="Enter descriptions separated by newlines" class="item-descriptions">${descriptions}</textarea>
+                    </div>
+                </div>
+            `;
+            
+            list.appendChild(item);
+            
+            // Only update dropdowns if not skipping (during bulk loads, we'll update once at the end)
+            if (!skipDropdownUpdate) {
+                updateItemLocationDropdowns(document.getElementById('playerId').value);
+            }
+            
+            // Set the value immediately if not skipping (for new items added manually)
+            if (location_id && !skipDropdownUpdate) {
+                const select = item.querySelector('.item-location');
+                select.value = location_id;
+            }
+        }
+
+        function addCharacter(id = null, name = '', descriptions = '', location = 'loc_0') {
+            const charId = id || `char_${characterCounter + 1}`;
+            characterCounter++;
+            const list = document.getElementById('charactersList');
+            
+            const item = document.createElement('div');
+            item.className = 'row-item';
+            item.innerHTML = `
+                <div class="row-item-header">
+                    <div class="row-item-name">${name || '(New Character)'}</div>
+                    <button type="button" class="btn-remove-row" onclick="this.closest('.row-item').remove()">Remove</button>
+                </div>
+                <div class="row-fields">
+                    <div>
+                        <label>ID</label>
+                        <input type="text" value="${charId}" readonly class="character-id">
+                    </div>
+                    <div>
+                        <label>Name</label>
+                        <input type="text" placeholder="Character name" value="${name}" class="character-name" onchange="updateRowHeader(this)">
+                    </div>
+                    <div>
+                        <label>Location ID</label>
+                        <input type="text" placeholder="e.g., loc_0" value="${location}" class="character-location">
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label>Descriptions</label>
+                        <textarea placeholder="Enter descriptions separated by newlines" class="character-descriptions">${descriptions}</textarea>
+                    </div>
+                </div>
+            `;
+            
+            list.appendChild(item);
+        }
+
+        function gatherLocations() {
+            const locations = [];
+            document.querySelectorAll('#locationsList .row-item').forEach(item => {
+                const connectingSelect = item.querySelector('.location-connecting');
+                const connectingLocations = Array.from(connectingSelect.selectedOptions).map(opt => opt.value);
+                
+                locations.push({
+                    id: item.querySelector('.location-id').value,
+                    name: item.querySelector('.location-name').value,
+                    descriptions: item.querySelector('.location-descriptions').value
+                        .split('\n')
+                        .map(d => d.trim())
+                        .filter(d => d),
+                    connecting_locations: connectingLocations,
+                    blocked_locations: {},
+                    items: []
+                });
+            });
+            return locations;
+        }
+
+        function gatherItems() {
+            const items = [];
+            document.querySelectorAll('#itemsList .row-item').forEach(item => {
+                items.push({
+                    id: item.querySelector('.item-id').value,
+                    name: item.querySelector('.item-name').value,
+                    descriptions: item.querySelector('.item-descriptions').value
+                        .split('\n')
+                        .map(d => d.trim())
+                        .filter(d => d),
+                    gettable: item.querySelector('.item-gettable').checked,
+                    location_id: item.querySelector('.item-location').value || null
+                });
+            });
+            return items;
+        }
+
+        function gatherCharacters() {
+            const characters = [];
+            document.querySelectorAll('#charactersList .row-item').forEach(item => {
+                characters.push({
+                    id: item.querySelector('.character-id').value,
+                    name: item.querySelector('.character-name').value,
+                    descriptions: item.querySelector('.character-descriptions').value
+                        .split('\n')
+                        .map(d => d.trim())
+                        .filter(d => d),
+                    location: item.querySelector('.character-location').value
+                });
+            });
+            return characters;
+        }
+
+        function updateRowHeader(input) {
+            const header = input.closest('.row-item').querySelector('.row-item-name');
+            const value = input.value.trim();
+            header.textContent = value || '(New Item)';
+        }
+
+        function showMessage(text, type) {
+            const container = document.getElementById('messageContainer');
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            
+            container.innerHTML = '';
+            container.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

@@ -10,3 +10,5 @@ dependencies:
       - python-dotenv
       - jsonpickle==4.*
       - gradio==6.*
+      - flask
+      - flask-cors

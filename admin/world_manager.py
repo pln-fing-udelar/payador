@@ -281,8 +281,9 @@ def _form_to_world_dict(form_data):
         characters_data.append(char_dict)
     
     # Build player dict
+    player_id = form_data.get('player_id', 'char_0')
     player_dict = {
-        'id': 'char_0',
+        'id': player_id,
         'name': form_data.get('player_name', 'Player'),
         'descriptions': form_data.get('player_descriptions', []),
         'location': form_data.get('player_location', 'loc_0'),
@@ -303,6 +304,36 @@ def _form_to_world_dict(form_data):
             }
         }
     
+    # Distribute items to their locations/characters based on location_id
+    for item in form_data.get('items', []):
+        item_id = item.get('id', f"item_{len(items_data)}")
+        location_id = item.get('location_id')
+        
+        if location_id:
+            # Check if location_id matches a location
+            location_found = False
+            for loc in locations_data:
+                if loc['id'] == location_id:
+                    if item_id not in loc['items']:
+                        loc['items'].append(item_id)
+                    location_found = True
+                    break
+            
+            # If not found in locations, check characters
+            if not location_found:
+                char_found = False
+                for char in characters_data:
+                    if char['id'] == location_id:
+                        if item_id not in char['inventory']:
+                            char['inventory'].append(item_id)
+                        char_found = True
+                        break
+                
+                # If not found in characters, check if it's the player
+                if not char_found and location_id == player_id:
+                    if item_id not in player_dict['inventory']:
+                        player_dict['inventory'].append(item_id)
+    
     return {
         'locations': locations_data,
         'items': items_data,
@@ -320,12 +351,42 @@ def _world_dict_to_form(world_dict):
     
     player = world_dict.get('player', {})
     
+    # Determine item locations by searching locations and characters
+    items_list = world_dict.get('items', [])
+    for item in items_list:
+        item_id = item.get('id')
+        location_id = None
+        
+        # Search in locations
+        for loc in world_dict.get('locations', []):
+            if item_id in loc.get('items', []):
+                location_id = loc.get('id')
+                break
+        
+        # If not found in locations, search in characters
+        if not location_id:
+            for char in world_dict.get('characters', []):
+                if item_id in char.get('inventory', []):
+                    location_id = char.get('id')
+                    break
+        
+        # If not found in characters, search in player inventory
+        if not location_id:
+            player = world_dict.get('player', {})
+            if item_id in player.get('inventory', []):
+                location_id = player.get('id', 'char_0')
+        
+        # Add location_id to item for form
+        if location_id:
+            item['location_id'] = location_id
+    
     form_data = {
         'player_name': player.get('name', ''),
+        'player_id': player.get('id', 'char_0'),
         'player_location': player.get('location', 'loc_0'),
         'player_descriptions': player.get('descriptions', []),
         'locations': world_dict.get('locations', []),
-        'items': world_dict.get('items', []),
+        'items': items_list,
         'characters': world_dict.get('characters', []),
         'objective_first_id': None,
         'objective_first_type': None,

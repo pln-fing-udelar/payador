@@ -535,6 +535,7 @@
                         <div class="form-group">
                             <label for="playerName">Player Name *</label>
                             <input type="text" id="playerName" required>
+                            <input type="hidden" id="playerId" value="char_0">
                         </div>
                         <div class="form-group">
                             <label for="playerLocation">Starting Location ID *</label>
@@ -722,6 +723,53 @@
                     }
                 });
             });
+            updateItemLocationDropdowns(document.getElementById('playerId').value);
+        }
+
+        function updateItemLocationDropdowns(playerId = 'char_0') {
+            // Get all location IDs and their names from the current form
+            const locations = Array.from(document.querySelectorAll('#locationsList .row-item')).map(locItem => ({
+                id: locItem.querySelector('.location-id').value,
+                name: locItem.querySelector('.location-name').value || 'Unnamed Location'
+            }));
+            
+            // Get all character IDs and their names from the current form
+            const characters = Array.from(document.querySelectorAll('#charactersList .row-item')).map(charItem => ({
+                id: charItem.querySelector('.character-id').value,
+                name: charItem.querySelector('.character-name').value || 'Unnamed Character'
+            }));
+            
+            // Also include the player character (using dynamic player ID)
+            const playerName = document.getElementById('playerName').value || 'Player';
+            characters.unshift({
+                id: playerId,
+                name: playerName
+            });
+            
+            // Update each item's location dropdown
+            document.querySelectorAll('.item-location').forEach(select => {
+                const selectedValue = select.value;
+                
+                select.innerHTML = '<option value="">— Select location or character —</option>';
+                
+                // Add locations
+                locations.forEach(loc => {
+                    const option = document.createElement('option');
+                    option.value = loc.id;
+                    option.textContent = '📍 ' + loc.name;
+                    option.selected = selectedValue === loc.id;
+                    select.appendChild(option);
+                });
+                
+                // Add characters (including player)
+                characters.forEach(char => {
+                    const option = document.createElement('option');
+                    option.value = char.id;
+                    option.textContent = '📦 ' + char.name + "'s Inventory";
+                    option.selected = selectedValue === char.id;
+                    select.appendChild(option);
+                });
+            });
         }
 
         function createNewWorld() {
@@ -739,6 +787,7 @@
             // Add at least one location
             addLocation();
             updateLocationDropdowns();
+            updateItemLocationDropdowns();
         }
 
         async function editWorld(worldId, language, event) {
@@ -761,6 +810,7 @@
                 
                 // Populate player data
                 document.getElementById('playerName').value = data.player_name || '';
+                document.getElementById('playerId').value = data.player_id || 'char_0';
                 document.getElementById('playerLocation').value = data.player_location || 'loc_0';
                 document.getElementById('playerDescriptions').value = (data.player_descriptions || []).join('\n');
                 
@@ -798,18 +848,29 @@
                     locIndex++;
                 });
                 
-                // Clear and populate items
-                document.getElementById('itemsList').innerHTML = '';
-                itemCounter = 0;
-                (data.items || []).forEach(item => {
-                    addItem(item.id, item.name, (item.descriptions || []).join('\n'), item.gettable);
-                });
-                
-                // Clear and populate characters
+                // Clear and populate characters BEFORE items (so item location dropdown has correct character list)
                 document.getElementById('charactersList').innerHTML = '';
                 characterCounter = 0;
                 (data.characters || []).forEach(char => {
                     addCharacter(char.id, char.name, (char.descriptions || []).join('\n'), char.location);
+                });
+                
+                // Clear and populate items (with skipDropdownUpdate flag for performance)
+                document.getElementById('itemsList').innerHTML = '';
+                itemCounter = 0;
+                (data.items || []).forEach(item => {
+                    addItem(item.id, item.name, (item.descriptions || []).join('\n'), item.gettable, item.location_id || null, true);
+                });
+                // Update dropdown once after all items are loaded with correct character list and player ID
+                updateItemLocationDropdowns(document.getElementById('playerId').value);
+                
+                // Restore item location values from stored data attributes
+                document.querySelectorAll('#itemsList .row-item').forEach(itemRow => {
+                    const locationId = itemRow.dataset.locationId;
+                    if (locationId) {
+                        const select = itemRow.querySelector('.item-location');
+                        select.value = locationId;
+                    }
                 });
                 
                 // Populate objective
@@ -835,6 +896,7 @@
                 // Gather form data
                 const formData = {
                     player_name: document.getElementById('playerName').value,
+                    player_id: document.getElementById('playerId').value,
                     player_location: document.getElementById('playerLocation').value,
                     player_descriptions: document.getElementById('playerDescriptions').value
                         .split('\n')
@@ -933,12 +995,16 @@
             updateLocationDropdowns();
         }
 
-        function addItem(id = null, name = '', descriptions = '', gettable = true) {
+        function addItem(id = null, name = '', descriptions = '', gettable = true, location_id = null, skipDropdownUpdate = false) {
             const itemId = id || `item_${itemCounter++}`;
             const list = document.getElementById('itemsList');
             
             const item = document.createElement('div');
             item.className = 'row-item';
+            // Store location_id as data attribute for later restoration after dropdown options are populated
+            if (location_id) {
+                item.dataset.locationId = location_id;
+            }
             item.innerHTML = `
                 <div class="row-item-header">
                     <div class="row-item-name">${name || '(New Item)'}</div>
@@ -953,6 +1019,12 @@
                         <label>Name</label>
                         <input type="text" placeholder="Item name" value="${name}" class="item-name" onchange="updateRowHeader(this)">
                     </div>
+                    <div>
+                        <label>Location</label>
+                        <select class="item-location">
+                            <option value="" ${!location_id ? 'selected' : ''}>— Select location or character —</option>
+                        </select>
+                    </div>
                     <div class="checkbox-label">
                         <input type="checkbox" class="item-gettable" ${gettable ? 'checked' : ''}>
                         <label style="margin: 0;">Can be taken by player</label>
@@ -965,6 +1037,17 @@
             `;
             
             list.appendChild(item);
+            
+            // Only update dropdowns if not skipping (during bulk loads, we'll update once at the end)
+            if (!skipDropdownUpdate) {
+                updateItemLocationDropdowns(document.getElementById('playerId').value);
+            }
+            
+            // Set the value immediately if not skipping (for new items added manually)
+            if (location_id && !skipDropdownUpdate) {
+                const select = item.querySelector('.item-location');
+                select.value = location_id;
+            }
         }
 
         function addCharacter(id = null, name = '', descriptions = '', location = 'loc_0') {
@@ -1033,7 +1116,8 @@
                         .split('\n')
                         .map(d => d.trim())
                         .filter(d => d),
-                    gettable: item.querySelector('.item-gettable').checked
+                    gettable: item.querySelector('.item-gettable').checked,
+                    location_id: item.querySelector('.item-location').value || null
                 });
             });
             return items;

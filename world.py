@@ -122,9 +122,9 @@ class Character (Component):
       if item not in self.inventory:
         self.inventory += [item]
         if item_location_or_owner.__class__.__name__ == 'Character':
-          item_location_or_owner.inventory = [i for i in item_location_or_owner.inventory if i is not item]
+          item_location_or_owner.inventory = [i for i in item_location_or_owner.inventory if i != item]
         elif item_location_or_owner.__class__.__name__ == 'Location':
-          item_location_or_owner.items = [i for i in item_location_or_owner.items if i is not item]
+          item_location_or_owner.items = [i for i in item_location_or_owner.items if i != item]
       else:
         raise Exception(f"Error: {item.name} is already in your inventory")
     else:
@@ -132,7 +132,7 @@ class Character (Component):
 
   def drop_item (self, item: Item):
     """Leave an item in the current location."""
-    self.inventory = [i for i in self.inventory if i is not item]
+    self.inventory = [i for i in self.inventory if i != item]
     self.location.items += [item]
 
   def give_item (self, character: 'Character', item: Item):
@@ -436,28 +436,72 @@ class World:
   def _process_moved_object(self, object_name: str, destination: str) -> None:
     """Process a single moved object.
     
-    There are three cases:
-      - the player has a new item (destination is Inventory or player name)
-      - the player gave an item to other character (destination is character name)
-      - the player dropped an item (destination is location name)
+    Handles cases where items are moved between inventory/locations,
+    initiated by either the player or NPCs.
+    
+    Possible transitions:
+      - Character/Location → Player's inventory
+      - Character/Location → Other character's inventory
+      - Character/Location → Location
     """
     try:
       world_item = self.items[object_name]
       
-      # Case 1: Item moved to inventory
-      if destination in ['Inventory', 'Inventario', 'Player', 'Jugador', self.player.name]:
-        item_location = [character for character in list(self.characters.values()) if world_item in character.inventory]
-        item_location += [location for location in list(self.locations.values()) if world_item in location.items]
-        if item_location:
-          self.player.save_item(world_item, item_location[0])
+      # Find current location of item
+      current_location = None
       
-      # Case 2: Item given to a character
+      # Check if in player inventory
+      if world_item in self.player.inventory:
+        current_location = ('inventory', self.player)
+      else:
+        # Check if in any NPC's inventory
+        for character in self.characters.values():
+          if world_item in character.inventory:
+            current_location = ('inventory', character)
+            break
+        # Check if in any location
+        if not current_location:
+          for location in self.locations.values():
+            if world_item in location.items:
+              current_location = ('location', location)
+              break
+      
+      if not current_location:
+        print(f"Error: Item '{object_name}' not found anywhere in the world")
+        return
+      
+      current_type, current_holder = current_location
+      
+      # Case 1: Item moved to player's inventory
+      if destination in ['Inventory', 'Inventario', 'Player', 'Jugador', self.player.name]:
+        if current_type == 'inventory':
+          # Someone (player or NPC) is giving to player
+          current_holder.inventory = [i for i in current_holder.inventory if i != world_item]
+          self.player.inventory.append(world_item)
+        elif current_type == 'location':
+          # Item in location, player (or someone) takes it
+          current_holder.items = [i for i in current_holder.items if i != world_item]
+          self.player.inventory.append(world_item)
+      
+      # Case 2: Item moved to a character's inventory
       elif destination in self.characters:
-        self.player.give_item(self.characters[destination], world_item)
+        target_character = self.characters[destination]
+        if current_type == 'inventory':
+          current_holder.inventory = [i for i in current_holder.inventory if i != world_item]
+          target_character.inventory.append(world_item)
+        elif current_type == 'location':
+          current_holder.items = [i for i in current_holder.items if i != world_item]
+          target_character.inventory.append(world_item)
       
       # Case 3: Item dropped at a location
-      else:
-        self.player.drop_item(world_item)
+      elif destination in self.locations:
+        target_location = self.locations[destination]
+        if current_type == 'inventory':
+          current_holder.inventory = [i for i in current_holder.inventory if i != world_item]
+          target_location.items.append(world_item)
+        elif current_type == 'location':
+          current_holder.items = [i for i in current_holder.items if i != world_item]
+          target_location.items.append(world_item)
     
     except Exception as e:
       print(f"Error processing moved object '{object_name}' to '{destination}': {e}")

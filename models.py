@@ -127,6 +127,7 @@ class WorldUpdatePrediction(BaseModel):
     unblocked_locations: list[UnblockedLocation] = Field(default_factory=list, description="List of previously blocked passages that are now accessible")
     player_movement: PlayerMovement | None = Field(default=None, description="New location if player moved, None otherwise")
     narration: str = Field(..., description="Narration describing the world changes")
+    negative_narration: str = Field(..., description="Neutral narration to use if the update cannot be applied")
 
     @field_validator('unblocked_locations', mode='before')
     @classmethod
@@ -162,4 +163,12 @@ class WorldUpdatePrediction(BaseModel):
         """Ensure narration is not empty."""
         if not v or not v.strip():
             raise ValueError("Narration cannot be empty")
+        return v.strip()
+
+    @field_validator('negative_narration')
+    @classmethod
+    def validate_negative_narration(cls, v: str) -> str:
+        """Ensure negative narration is not empty."""
+        if not v or not v.strip():
+            raise ValueError("Negative narration cannot be empty")
         return v.strip()

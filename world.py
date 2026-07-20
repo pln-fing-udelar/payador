@@ -5,6 +5,7 @@ and methods to update according to the detected changes by a language model.
 """
 
 import re
+import copy
 from typing import Type
 from models import WorldUpdatePrediction
 
@@ -397,7 +398,7 @@ class World:
 
     return world_description + '\n' + details
 
-  def update (self, updates: str) -> None:
+  def update (self, updates: str) -> bool:
     """Does the changes in the world according to the output of the language model.
 
     The considered transformations are:
@@ -411,6 +412,12 @@ class World:
     try:
       # Parse JSON response into Pydantic model
       world_update = WorldUpdatePrediction.model_validate_json(updates)
+    except Exception as e:
+      print(f"Error parsing world update: {e}")
+      return False
+
+    try:
+      working_world = copy.deepcopy(self)
 
       ordered_transformations = []
       duplicate_orders = set()
@@ -422,7 +429,7 @@ class World:
 
       source_index = 0
       for moved_object in world_update.moved_items:
-        self._register_transformation(
+        working_world._register_transformation(
           ordered_transformations=ordered_transformations,
           duplicate_orders=duplicate_orders,
           seen_orders=seen_orders,
@@ -435,7 +442,7 @@ class World:
         source_index += 1
 
       for passage in world_update.unblocked_locations:
-        self._register_transformation(
+        working_world._register_transformation(
           ordered_transformations=ordered_transformations,
           duplicate_orders=duplicate_orders,
           seen_orders=seen_orders,
@@ -448,7 +455,7 @@ class World:
         source_index += 1
 
       if world_update.player_movement is not None:
-        self._register_transformation(
+        working_world._register_transformation(
           ordered_transformations=ordered_transformations,
           duplicate_orders=duplicate_orders,
           seen_orders=seen_orders,
@@ -467,14 +474,22 @@ class World:
 
       for _, transformation_type, transformation_data in sorted(ordered_transformations, key=lambda entry: entry[0]):
         if transformation_type == "moved_item":
-          self._process_moved_object(transformation_data.name, transformation_data.destination)
+          working_world._process_moved_object(transformation_data.name, transformation_data.destination)
         elif transformation_type == "unblocked_location":
-          self._process_unblocked_location(transformation_data.location)
+          working_world._process_unblocked_location(transformation_data.location)
         elif transformation_type == "player_movement":
-          self._process_player_movement(transformation_data.location)
-    
+          working_world._process_player_movement(transformation_data.location)
+
+      # Commit the fully applied working copy only after every transformation succeeded.
+      self.items = working_world.items
+      self.characters = working_world.characters
+      self.locations = working_world.locations
+      self.player = working_world.player
+      self.objective = working_world.objective
+      return True
     except Exception as e:
-      print(f"Error parsing world update: {e}")
+      print(f"Error applying world update: {e}")
+      return False
 
   def _register_transformation(
     self,
@@ -510,96 +525,84 @@ class World:
       - Character/Location → Other character's inventory
       - Character/Location → Location
     """
-    try:
-      world_item = self.items[object_name]
-      
-      # Find current location of item
-      current_location = None
-      
-      # Check if in player inventory
-      if world_item in self.player.inventory:
-        current_location = ('inventory', self.player)
-      else:
-        # Check if in any NPC's inventory
-        for character in self.characters.values():
-          if world_item in character.inventory:
-            current_location = ('inventory', character)
-            break
-        # Check if in any location
-        if not current_location:
-          for location in self.locations.values():
-            if world_item in location.items:
-              current_location = ('location', location)
-              break
-      
+    world_item = self.items[object_name]
+
+    # Find current location of item.
+    current_location = None
+
+    # Check if in player inventory.
+    if world_item in self.player.inventory:
+      current_location = ('inventory', self.player)
+    else:
+      # Check if in any NPC's inventory.
+      for character in self.characters.values():
+        if world_item in character.inventory:
+          current_location = ('inventory', character)
+          break
+      # Check if in any location.
       if not current_location:
-        print(f"Error: Item '{object_name}' not found anywhere in the world")
-        return
-      
-      current_type, current_holder = current_location
-      
-      # Case 1: Item moved to player's inventory
-      if destination in ['Inventory', 'Inventario', 'Player', 'Jugador', self.player.name]:
-        if current_type == 'inventory':
-          # Someone (player or NPC) is giving to player
-          current_holder.inventory = [i for i in current_holder.inventory if i != world_item]
-          self.player.inventory.append(world_item)
-        elif current_type == 'location':
-          # Item in location, player (or someone) takes it
-          current_holder.items = [i for i in current_holder.items if i != world_item]
-          self.player.inventory.append(world_item)
-      
-      # Case 2: Item moved to a character's inventory
-      elif destination in self.characters:
-        target_character = self.characters[destination]
-        if current_type == 'inventory':
-          current_holder.inventory = [i for i in current_holder.inventory if i != world_item]
-          target_character.inventory.append(world_item)
-        elif current_type == 'location':
-          current_holder.items = [i for i in current_holder.items if i != world_item]
-          target_character.inventory.append(world_item)
-      
-      # Case 3: Item dropped at a location
-      elif destination in self.locations:
-        target_location = self.locations[destination]
-        if current_type == 'inventory':
-          current_holder.inventory = [i for i in current_holder.inventory if i != world_item]
-          target_location.items.append(world_item)
-        elif current_type == 'location':
-          current_holder.items = [i for i in current_holder.items if i != world_item]
-          target_location.items.append(world_item)
-    
-    except Exception as e:
-      print(f"Error processing moved object '{object_name}' to '{destination}': {e}")
+        for location in self.locations.values():
+          if world_item in location.items:
+            current_location = ('location', location)
+            break
+
+    if not current_location:
+      raise ValueError(f"Item '{object_name}' not found anywhere in the world")
+
+    current_type, current_holder = current_location
+
+    # Case 1: Item moved to player's inventory.
+    if destination in ['Inventory', 'Inventario', 'Player', 'Jugador', self.player.name]:
+      if current_type == 'inventory':
+        # Someone (player or NPC) is giving to player.
+        current_holder.inventory = [i for i in current_holder.inventory if i != world_item]
+        self.player.inventory.append(world_item)
+      elif current_type == 'location':
+        # Item in location, player (or someone) takes it.
+        current_holder.items = [i for i in current_holder.items if i != world_item]
+        self.player.inventory.append(world_item)
+
+    # Case 2: Item moved to a character's inventory.
+    elif destination in self.characters:
+      target_character = self.characters[destination]
+      if current_type == 'inventory':
+        current_holder.inventory = [i for i in current_holder.inventory if i != world_item]
+        target_character.inventory.append(world_item)
+      elif current_type == 'location':
+        current_holder.items = [i for i in current_holder.items if i != world_item]
+        target_character.inventory.append(world_item)
+
+    # Case 3: Item dropped at a location.
+    elif destination in self.locations:
+      target_location = self.locations[destination]
+      if current_type == 'inventory':
+        current_holder.inventory = [i for i in current_holder.inventory if i != world_item]
+        target_location.items.append(world_item)
+      elif current_type == 'location':
+        current_holder.items = [i for i in current_holder.items if i != world_item]
+        target_location.items.append(world_item)
+    else:
+      raise ValueError(f"Destination '{destination}' is not a valid inventory, character, or location")
 
   def _process_unblocked_location(self, passage_name: str) -> None:
     """Unblock a passage from the player's current location."""
-    try:
-      current_location = self.player.location
-      target_location = self.locations.get(passage_name)
+    current_location = self.player.location
+    target_location = self.locations.get(passage_name)
 
-      if target_location is None:
-        print(f"Error: Location '{passage_name}' not found")
-        return
+    if target_location is None:
+      raise ValueError(f"Location '{passage_name}' not found")
 
-      if passage_name not in current_location.blocked_locations:
-        print(f"Error: Passage to '{passage_name}' is not blocked")
-        return
+    if passage_name not in current_location.blocked_locations:
+      raise ValueError(f"Passage to '{passage_name}' is not blocked")
 
-      current_location.unblock_passage(target_location)
-    except Exception as e:
-      print(f"Error unblocking passage '{passage_name}': {e}")
+    current_location.unblock_passage(target_location)
 
   def _process_player_movement(self, destination: str) -> None:
     """Move the player to a new location."""
-    try:
-      target_location = self.locations.get(destination)
+    target_location = self.locations.get(destination)
 
-      if target_location is None:
-        print(f"Error: Location '{destination}' not found")
-        return
+    if target_location is None:
+      raise ValueError(f"Location '{destination}' not found")
 
-      self.player.move(target_location)
-    except Exception as e:
-      print(f"Error moving player to '{destination}': {e}")
+    self.player.move(target_location)
 

@@ -125,11 +125,14 @@ def game_loop(message, history):
         return "Error processing your input. Please try again."
     
     # World update
-    world.update(response_update)
+    update_success = world.update(response_update)
     updated_symbolic_state = jsonpickle.encode(world, unpicklable=True)
     updated_rendered_state = world.render_world(language=language)
-    
-    if last_player_position is not world.player.location:
+
+    if not update_success:
+        answer += f"{world_update.negative_narration}\n"
+    # Compare names instead of object identity because world.update() now commits a deep-copied world.
+    elif last_player_position.name != world.player.location.name:
         # Narrate new scene
         last_player_position = world.player.location
         system_msg_new_scene, user_msg_new_scene = prompt_narrate_current_scene(

@@ -136,9 +136,11 @@ def prompt_world_update_spanish (world_state: str, input: str):
       "moved_items": [{"order": 1, "name": "<nombre_objeto>", "destination": "<destino>"}, ...],
       "unblocked_locations": [{"order": 2, "location": "<lugar>"}, ...],
       "player_movement": {"order": 3, "location": "<nuevo_lugar>"} o null,
-      "narration": "<texto_narracion>"
+      "narration": "<texto_narracion>",
+      "negative_narration": "<texto_neutral_si_algo_falla>"
     }
 
+    Debes incluir SIEMPRE el campo "negative_narration" en cada respuesta JSON, incluso cuando la acción sea válida o sea solo una pregunta. Usa "narration" para la versión positiva de lo que ocurrió cuando la actualización se aplica correctamente, y usa "negative_narration" para una versión neutral que puedas mostrar si la actualización no se puede aplicar según lo planeado.
     El valor de `order` debe ser un número entero único por respuesta y debe reflejar el orden real de ejecución entre todas las transformaciones, sin importar la lista en la que aparezcan.
     
     Aquí hay algunos ejemplos:
@@ -148,7 +150,8 @@ def prompt_world_update_spanish (world_state: str, input: str):
       "moved_items": [{"order": 1, "name": "hacha", "destination": "Inventory"}],
       "unblocked_locations": [],
       "player_movement": null,
-      "narration": "Guardaste el hacha en tu bolso. Sientes la diferencia de peso luego de haberla guardado."
+      "narration": "Guardaste el hacha en tu bolso. Sientes la diferencia de peso luego de haberla guardado.",
+      "negative_narration": "No logras guardar el hacha como esperabas."
     }
     
     Ejemplo 2 (El jugador desbloquea el pasaje al Sótano):
@@ -156,7 +159,8 @@ def prompt_world_update_spanish (world_state: str, input: str):
       "moved_items": [],
       "unblocked_locations": [{"order": 1, "location": "Sótano"}],
       "player_movement": null,
-      "narration": "El sótano, que estaba bloqueado, ahora está accesible."
+      "narration": "El sótano, que estaba bloqueado, ahora está accesible.",
+      "negative_narration": "El acceso al sótano no pudo abrirse."
     }
     
     Ejemplo 3 (El jugador ahora está en el Jardín):
@@ -164,7 +168,8 @@ def prompt_world_update_spanish (world_state: str, input: str):
       "moved_items": [],
       "unblocked_locations": [],
       "player_movement": {"order": 1, "location": "Jardín"},
-      "narration": "Entras al Jardín."
+      "narration": "Entras al Jardín.",
+      "negative_narration": "No consigues llegar al Jardín."
     }
     
     Ejemplo 4 (El jugador guarda objetos y deja el hacha en el lugar):
@@ -172,7 +177,8 @@ def prompt_world_update_spanish (world_state: str, input: str):
       "moved_items": [{"order": 1, "name": "banana", "destination": "Inventory"}, {"order": 2, "name": "botella", "destination": "Inventory"}, {"order": 3, "name": "hacha", "destination": "Hall principal"}],
       "unblocked_locations": [],
       "player_movement": null,
-      "narration": "Guardaste la banana y la botella en tu bolso. El hacha quedó en el Hall principal."
+      "narration": "Guardaste la banana y la botella en tu bolso. El hacha quedó en el Hall principal.",
+      "negative_narration": "No consigues reorganizar esos objetos como planeabas."
     }
     
     Ejemplo 5 (El jugador le da el libro a John):
@@ -180,7 +186,8 @@ def prompt_world_update_spanish (world_state: str, input: str):
       "moved_items": [{"order": 1, "name": "libro", "destination": "John"}],
       "unblocked_locations": [],
       "player_movement": null,
-      "narration": "John ahora tiene el libro."
+      "narration": "John ahora tiene el libro.",
+      "negative_narration": "El libro no logra llegar a John."
     }
     
     Ejemplo 6 (El jugador no puede hacer la acción):
@@ -188,7 +195,8 @@ def prompt_world_update_spanish (world_state: str, input: str):
       "moved_items": [],
       "unblocked_locations": [],
       "player_movement": null,
-      "narration": "No pasa nada..."
+      "narration": "No pasa nada...",
+      "negative_narration": "La acción no pudo resolverse como esperabas."
     }
     
     Ejemplo 7 (El jugador hace una pregunta - la información está disponible en world_state):
@@ -196,7 +204,8 @@ def prompt_world_update_spanish (world_state: str, input: str):
       "moved_items": [],
       "unblocked_locations": [],
       "player_movement": null,
-      "narration": "Puedes ver una mesa de madera, una llave oxidada, y una puerta."
+      "narration": "Puedes ver una mesa de madera, una llave oxidada, y una puerta.",
+      "negative_narration": "No aparece información nueva sobre eso."
     }
     
     Ejemplo 8 (El jugador hace una pregunta - la información NO está en world_state):
@@ -204,7 +213,8 @@ def prompt_world_update_spanish (world_state: str, input: str):
       "moved_items": [],
       "unblocked_locations": [],
       "player_movement": null,
-      "narration": "El personaje no ha mencionado su edad."
+      "narration": "El personaje no ha mencionado su edad.",
+      "negative_narration": "No hay datos suficientes para responder como esperabas."
     }
     
     Ejemplo 9 (El jugador interactúa socialmente - acción narrativa sin cambios mecánicos):
@@ -213,7 +223,8 @@ def prompt_world_update_spanish (world_state: str, input: str):
       "moved_items": [],
       "unblocked_locations": [],
       "player_movement": null,
-      "narration": "Rosa sonríe calurosamente. 'Hola!. Es lindo verte por aquí.'"
+      "narration": "Rosa sonríe calurosamente. 'Hola!. Es lindo verte por aquí.'",
+      "negative_narration": "Rosa no responde como esperabas."
     }
     
     Recuerda: la narración debe describir los cambios detectados sin hacer avanzar la historia ni crear detalles no incluidos en el estado del mundo. Cuando respondas preguntas, SOLO usa información del world_state proporcionado. Para acciones narrativas/sociales, usa las descripciones del world_state para crear respuestas de NPCs auténticas y creativas. Puedes responder preguntas del jugador sobre objetos, personajes o el lugar en el que se encuentra, pero SOLO si esa información está presente en el world_state."""
@@ -239,9 +250,11 @@ def prompt_world_update_english (world_state: str, input: str):
       "moved_items": [{"order": 1, "name": "<object_name>", "destination": "<destination>"}, ...],
       "unblocked_locations": [{"order": 2, "location": "<location>"}, ...],
       "player_movement": {"order": 3, "location": "<new_location>"} or null,
-      "narration": "<narration_text>"
+      "narration": "<narration_text>",
+      "negative_narration": "<neutral_text_to_show_if_the_update_cannot_be_applied>"
     }
 
+    You must ALWAYS include "negative_narration" in every JSON response, even when the action is valid or the player is asking a question. Use "narration" for the positive version of what happened when the update is applied successfully, and use "negative_narration" for a neutral version that can be shown if the update cannot be applied as planned.
     The `order` value must be a unique integer within the response and must reflect the execution order across all transformations, regardless of which field they appear in.
     
     Here are some examples:
@@ -251,7 +264,8 @@ def prompt_world_update_english (world_state: str, input: str):
       "moved_items": [{"order": 1, "name": "axe", "destination": "Inventory"}],
       "unblocked_locations": [],
       "player_movement": null,
-      "narration": "You put the axe in your bag. You feel the difference in weight after storing it."
+      "narration": "You put the axe in your bag. You feel the difference in weight after storing it.",
+      "negative_narration": "You do not manage to store the axe."
     }
     
     Example 2 (The player unblocks the passage to the basement):
@@ -259,7 +273,8 @@ def prompt_world_update_english (world_state: str, input: str):
       "moved_items": [],
       "unblocked_locations": [{"order": 1, "location": "Basement"}],
       "player_movement": null,
-      "narration": "The basement is now reachable."
+      "narration": "The basement is now reachable.",
+      "negative_narration": "The passage to the basement remains closed."
     }
     
     Example 3 (The player now is in the garden):
@@ -267,7 +282,8 @@ def prompt_world_update_english (world_state: str, input: str):
       "moved_items": [],
       "unblocked_locations": [],
       "player_movement": {"order": 1, "location": "Garden"},
-      "narration": "You enter the garden."
+      "narration": "You enter the garden.",
+      "negative_narration": "You do not make it to the garden."
     }
     
     Example 4 (The player puts objects in the bag and leaves the axe on the floor):
@@ -275,7 +291,8 @@ def prompt_world_update_english (world_state: str, input: str):
       "moved_items": [{"order": 1, "name": "banana", "destination": "Inventory"}, {"order": 2, "name": "bottle", "destination": "Inventory"}, {"order": 3, "name": "axe", "destination": "Main Hall"}],
       "unblocked_locations": [],
       "player_movement": null,
-      "narration": "You put the banana and the bottle in your bag. The axe lies on the floor of the Main Hall."
+      "narration": "You put the banana and the bottle in your bag. The axe lies on the floor of the Main Hall.",
+      "negative_narration": "You do not manage to move the objects as planned."
     }
     
     Example 5 (The player gives the book to John):
@@ -283,7 +300,8 @@ def prompt_world_update_english (world_state: str, input: str):
       "moved_items": [{"order": 1, "name": "book", "destination": "John"}],
       "unblocked_locations": [],
       "player_movement": null,
-      "narration": "John now has the book."
+      "narration": "John now has the book.",
+      "negative_narration": "The book does not reach John."
     }
     
     Example 6 (The player cannot perform the action):
@@ -291,7 +309,8 @@ def prompt_world_update_english (world_state: str, input: str):
       "moved_items": [],
       "unblocked_locations": [],
       "player_movement": null,
-      "narration": "Nothing happened..."
+      "narration": "Nothing happened...",
+      "negative_narration": "The action could not be completed as expected."
     }
     
     Example 7 (The player asks a question - information is available in world_state):
@@ -299,7 +318,8 @@ def prompt_world_update_english (world_state: str, input: str):
       "moved_items": [],
       "unblocked_locations": [],
       "player_movement": null,
-      "narration": "You can see a wooden table, a rusty key, and a door."
+      "narration": "You can see a wooden table, a rusty key, and a door.",
+      "negative_narration": "No new information is available about that."
     }
     
     Example 8 (The player asks a question - information is NOT available in world_state):
@@ -307,7 +327,8 @@ def prompt_world_update_english (world_state: str, input: str):
       "moved_items": [],
       "unblocked_locations": [],
       "player_movement": null,
-      "narration": "The character hasn't mentioned his age."
+      "narration": "The character hasn't mentioned his age.",
+      "negative_narration": "There is not enough information to answer that as expected."
     }
     
     Example 9 (The player interacts socially - narrative action with no mechanical changes):
@@ -316,7 +337,8 @@ def prompt_world_update_english (world_state: str, input: str):
       "moved_items": [],
       "unblocked_locations": [],
       "player_movement": null,
-      "narration": "Rosa smiles warmly. 'Hello! It's nice to see you here.'"
+      "narration": "Rosa smiles warmly. 'Hello! It's nice to see you here.'",
+      "negative_narration": "Rosa does not respond as expected."
     }
     
     Remember: the narration should describe the changes detected without moving the story forward and without creating details not included in the world state. When answering questions, ONLY use information from the provided world_state. For narrative/social actions, use the descriptions in world_state to create authentic and creative NPC responses. You can answer the player's questions about objects, characters, or the place they are in, but ONLY if that information is present in the world_state."""

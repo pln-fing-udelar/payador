@@ -411,27 +411,93 @@ class World:
     try:
       # Parse JSON response into Pydantic model
       world_update = WorldUpdatePrediction.model_validate_json(updates)
-      
-      # Process moved items
+
+      ordered_transformations = []
+      duplicate_orders = set()
+      seen_orders = set()
+      missing_order_count = 0
+
+      # Build a single ordered queue so the execution order stays explicit.
+      # Missing orders are pushed to the end.
+
+      source_index = 0
       for moved_object in world_update.moved_items:
-        self._process_moved_object(moved_object.name, moved_object.destination)
-      
-      # Process unblocked locations
+        self._register_transformation(
+          ordered_transformations=ordered_transformations,
+          duplicate_orders=duplicate_orders,
+          seen_orders=seen_orders,
+          transformation_type="moved_item",
+          transformation_data=moved_object,
+          source_index=source_index,
+        )
+        if moved_object.order is None:
+          missing_order_count += 1
+        source_index += 1
+
       for passage in world_update.unblocked_locations:
-        try:
-          self.locations[self.player.location.name].unblock_passage(self.locations[passage])
-        except Exception as e:
-          print(f"Error unblocking passage '{passage}': {e}")
-      
-      # Process player movement
+        self._register_transformation(
+          ordered_transformations=ordered_transformations,
+          duplicate_orders=duplicate_orders,
+          seen_orders=seen_orders,
+          transformation_type="unblocked_location",
+          transformation_data=passage,
+          source_index=source_index,
+        )
+        if passage.order is None:
+          missing_order_count += 1
+        source_index += 1
+
       if world_update.player_movement is not None:
-        try:
-          self.player.move(self.locations[world_update.player_movement])
-        except Exception as e:
-          print(f"Error moving player to '{world_update.player_movement}': {e}")
+        self._register_transformation(
+          ordered_transformations=ordered_transformations,
+          duplicate_orders=duplicate_orders,
+          seen_orders=seen_orders,
+          transformation_type="player_movement",
+          transformation_data=world_update.player_movement,
+          source_index=source_index,
+        )
+        if world_update.player_movement.order is None:
+          missing_order_count += 1
+
+      if duplicate_orders:
+        print(f"Warning: duplicate transformation order values detected: {sorted(duplicate_orders)}")
+
+      if missing_order_count:
+        print(f"Warning: {missing_order_count} transformation(s) are missing an order value; applying them after ordered transformations in input order")
+
+      for _, transformation_type, transformation_data in sorted(ordered_transformations, key=lambda entry: entry[0]):
+        if transformation_type == "moved_item":
+          self._process_moved_object(transformation_data.name, transformation_data.destination)
+        elif transformation_type == "unblocked_location":
+          self._process_unblocked_location(transformation_data.location)
+        elif transformation_type == "player_movement":
+          self._process_player_movement(transformation_data.location)
     
     except Exception as e:
       print(f"Error parsing world update: {e}")
+
+  def _register_transformation(
+    self,
+    ordered_transformations,
+    duplicate_orders,
+    seen_orders,
+    transformation_type: str,
+    transformation_data,
+    source_index: int,
+  ) -> None:
+    """Register one transformation and keep missing orders sorted last."""
+    order = transformation_data.order
+
+    if order is None:
+      sort_key = (1, source_index)
+    else:
+      if order in seen_orders:
+        duplicate_orders.add(order)
+      else:
+        seen_orders.add(order)
+      sort_key = (0, order, source_index)
+
+    ordered_transformations.append((sort_key, transformation_type, transformation_data))
 
   def _process_moved_object(self, object_name: str, destination: str) -> None:
     """Process a single moved object.
@@ -505,4 +571,35 @@ class World:
     
     except Exception as e:
       print(f"Error processing moved object '{object_name}' to '{destination}': {e}")
+
+  def _process_unblocked_location(self, passage_name: str) -> None:
+    """Unblock a passage from the player's current location."""
+    try:
+      current_location = self.player.location
+      target_location = self.locations.get(passage_name)
+
+      if target_location is None:
+        print(f"Error: Location '{passage_name}' not found")
+        return
+
+      if passage_name not in current_location.blocked_locations:
+        print(f"Error: Passage to '{passage_name}' is not blocked")
+        return
+
+      current_location.unblock_passage(target_location)
+    except Exception as e:
+      print(f"Error unblocking passage '{passage_name}': {e}")
+
+  def _process_player_movement(self, destination: str) -> None:
+    """Move the player to a new location."""
+    try:
+      target_location = self.locations.get(destination)
+
+      if target_location is None:
+        print(f"Error: Location '{destination}' not found")
+        return
+
+      self.player.move(target_location)
+    except Exception as e:
+      print(f"Error moving player to '{destination}': {e}")
 

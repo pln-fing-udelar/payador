@@ -133,17 +133,19 @@ def prompt_world_update_spanish (world_state: str, input: str):
     
     IMPORTANTE: Debes responder ÚNICAMENTE con un JSON válido sin ningún texto adicional. NO ENVUELVAS el JSON en bloques de código markdown (sin ```json ``` ni backticks). El JSON debe tener exactamente esta estructura:
     {
-      "moved_items": [{"name": "<nombre_objeto>", "destination": "<destino>"}, ...],
-      "unblocked_locations": ["<lugar>", ...],
-      "player_movement": "<nuevo_lugar>" o null,
+      "moved_items": [{"order": 1, "name": "<nombre_objeto>", "destination": "<destino>"}, ...],
+      "unblocked_locations": [{"order": 2, "location": "<lugar>"}, ...],
+      "player_movement": {"order": 3, "location": "<nuevo_lugar>"} o null,
       "narration": "<texto_narracion>"
     }
+
+    El valor de `order` debe ser un número entero único por respuesta y debe reflejar el orden real de ejecución entre todas las transformaciones, sin importar la lista en la que aparezcan.
     
     Aquí hay algunos ejemplos:
     
     Ejemplo 1 (El jugador guarda el hacha en su inventario):
     {
-      "moved_items": [{"name": "hacha", "destination": "Inventory"}],
+      "moved_items": [{"order": 1, "name": "hacha", "destination": "Inventory"}],
       "unblocked_locations": [],
       "player_movement": null,
       "narration": "Guardaste el hacha en tu bolso. Sientes la diferencia de peso luego de haberla guardado."
@@ -152,7 +154,7 @@ def prompt_world_update_spanish (world_state: str, input: str):
     Ejemplo 2 (El jugador desbloquea el pasaje al Sótano):
     {
       "moved_items": [],
-      "unblocked_locations": ["Sótano"],
+      "unblocked_locations": [{"order": 1, "location": "Sótano"}],
       "player_movement": null,
       "narration": "El sótano, que estaba bloqueado, ahora está accesible."
     }
@@ -161,13 +163,13 @@ def prompt_world_update_spanish (world_state: str, input: str):
     {
       "moved_items": [],
       "unblocked_locations": [],
-      "player_movement": "Jardín",
+      "player_movement": {"order": 1, "location": "Jardín"},
       "narration": "Entras al Jardín."
     }
     
     Ejemplo 4 (El jugador guarda objetos y deja el hacha en el lugar):
     {
-      "moved_items": [{"name": "banana", "destination": "Inventory"}, {"name": "botella", "destination": "Inventory"}, {"name": "hacha", "destination": "Hall principal"}],
+      "moved_items": [{"order": 1, "name": "banana", "destination": "Inventory"}, {"order": 2, "name": "botella", "destination": "Inventory"}, {"order": 3, "name": "hacha", "destination": "Hall principal"}],
       "unblocked_locations": [],
       "player_movement": null,
       "narration": "Guardaste la banana y la botella en tu bolso. El hacha quedó en el Hall principal."
@@ -175,7 +177,7 @@ def prompt_world_update_spanish (world_state: str, input: str):
     
     Ejemplo 5 (El jugador le da el libro a John):
     {
-      "moved_items": [{"name": "libro", "destination": "John"}],
+      "moved_items": [{"order": 1, "name": "libro", "destination": "John"}],
       "unblocked_locations": [],
       "player_movement": null,
       "narration": "John ahora tiene el libro."
@@ -234,17 +236,19 @@ def prompt_world_update_english (world_state: str, input: str):
     
     IMPORTANT: You must respond ONLY with valid JSON without any additional text. DO NOT wrap the JSON in markdown code blocks (no ```json ``` or backticks). The JSON must have exactly this structure:
     {
-      "moved_items": [{"name": "<object_name>", "destination": "<destination>"}, ...],
-      "unblocked_locations": ["<location>", ...],
-      "player_movement": "<new_location>" or null,
+      "moved_items": [{"order": 1, "name": "<object_name>", "destination": "<destination>"}, ...],
+      "unblocked_locations": [{"order": 2, "location": "<location>"}, ...],
+      "player_movement": {"order": 3, "location": "<new_location>"} or null,
       "narration": "<narration_text>"
     }
+
+    The `order` value must be a unique integer within the response and must reflect the execution order across all transformations, regardless of which field they appear in.
     
     Here are some examples:
     
     Example 1 (The player took the axe and put it in the inventory):
     {
-      "moved_items": [{"name": "axe", "destination": "Inventory"}],
+      "moved_items": [{"order": 1, "name": "axe", "destination": "Inventory"}],
       "unblocked_locations": [],
       "player_movement": null,
       "narration": "You put the axe in your bag. You feel the difference in weight after storing it."
@@ -253,7 +257,7 @@ def prompt_world_update_english (world_state: str, input: str):
     Example 2 (The player unblocks the passage to the basement):
     {
       "moved_items": [],
-      "unblocked_locations": ["Basement"],
+      "unblocked_locations": [{"order": 1, "location": "Basement"}],
       "player_movement": null,
       "narration": "The basement is now reachable."
     }
@@ -262,13 +266,13 @@ def prompt_world_update_english (world_state: str, input: str):
     {
       "moved_items": [],
       "unblocked_locations": [],
-      "player_movement": "Garden",
+      "player_movement": {"order": 1, "location": "Garden"},
       "narration": "You enter the garden."
     }
     
     Example 4 (The player puts objects in the bag and leaves the axe on the floor):
     {
-      "moved_items": [{"name": "banana", "destination": "Inventory"}, {"name": "bottle", "destination": "Inventory"}, {"name": "axe", "destination": "Main Hall"}],
+      "moved_items": [{"order": 1, "name": "banana", "destination": "Inventory"}, {"order": 2, "name": "bottle", "destination": "Inventory"}, {"order": 3, "name": "axe", "destination": "Main Hall"}],
       "unblocked_locations": [],
       "player_movement": null,
       "narration": "You put the banana and the bottle in your bag. The axe lies on the floor of the Main Hall."
@@ -276,7 +280,7 @@ def prompt_world_update_english (world_state: str, input: str):
     
     Example 5 (The player gives the book to John):
     {
-      "moved_items": [{"name": "book", "destination": "John"}],
+      "moved_items": [{"order": 1, "name": "book", "destination": "John"}],
       "unblocked_locations": [],
       "player_movement": null,
       "narration": "John now has the book."

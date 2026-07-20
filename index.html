@@ -42,6 +42,15 @@
             margin-bottom: 10px;
         }
 
+        .header-image {
+            display: block;
+            width: min(100%, 700px);
+            margin: 24px auto 0;
+            border-radius: 12px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+        }
+
         header p {
             font-size: 1.2em;
             opacity: 1;
@@ -230,6 +239,7 @@
     <div class="container">
         <header>
             <h1>PAYADOR</h1>
+            <img class="header-image" src="data/transformations.svg" alt="PAYADOR transformations summary">
         </header>
 
         <main>
@@ -276,9 +286,20 @@
             <section>
                 <h2>Publications</h2>
                 <p>
-                    PAYADOR was first proposed in the ICCC'24 paper and further developed in Santiago Góngora's Master's thesis.
+                    PAYADOR was first proposed in the ICCC'24 paper and further developed in Santiago Góngora's Master's thesis. The ICCC'26 paper presents a pilot study on the system's performance.
                 </p>
                 <div class="publications-container">
+                    <div class="publication-item">
+                        <div class="publication-type">Conference Paper</div>
+                        <div class="publication-title">
+                            <a href="https://computationalcreativity.net/iccc26/papers/ICCC26_paper_156.pdf" target="_blank">World-State Transformations for Neuro-symbolic Interactive Storytelling</a>
+                        </div>
+                        <div class="publication-meta">ICCC'24 Proceedings</div>
+                        <div class="publication-meta">
+                            Authors: <a href="https://scholar.google.com/citations?user=p1lKpmYAAAAJ" target="_blank">Santiago Góngora</a>, <a href="https://scholar.google.com/citations?user=C7c4uCsAAAAJ" target="_blank">Luis Chiruzzo</a>, <a href="https://scholar.google.com/citations?user=lC8QyOwAAAAJ" target="_blank">Gonzalo Méndez</a>, <a href="https://scholar.google.com/citations?user=AcY-Y2gAAAAJ" target="_blank">Pablo Gervás</a>
+                        </div>
+                    </div>
+                    
                     <div class="publication-item">
                         <div class="publication-type">Conference Paper</div>
                         <div class="publication-title">

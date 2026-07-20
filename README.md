@@ -1,5 +1,5 @@
 # PAYADOR
-This repository contains the code for the PAYADOR approach, presented in the ICCC'24 paper “[PAYADOR: A Minimalist Approach to Grounding Language Models on Structured Data for Interactive Storytelling and Role-playing Games](https://computationalcreativity.net/iccc24/papers/ICCC24_paper_152.pdf)”.
+This repository contains the code for the PAYADOR approach, presented in the ICCC'24 paper “[PAYADOR: A Minimalist Approach to Grounding Language Models on Structured Data for Interactive Storytelling and Role-playing Games](https://computationalcreativity.net/iccc24/papers/ICCC24_paper_152.pdf)” and evaluated in the ICCC'26 paper “[World-State Transformations for Neuro-symbolic Interactive Storytelling](https://computationalcreativity.net/iccc26/papers/ICCC26_paper_156.pdf)”.
 
 TL;DR: The PAYADOR approach to the world-update problem in Interactive Storytelling consists of grounding Large Language Models to structured data to predict world-state transformations resulting from the player input.
 

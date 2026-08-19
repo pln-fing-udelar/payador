@@ -104,23 +104,57 @@ class GeminiModel():
 
 class MovedObject(BaseModel):
     """Represents an object moved during world update."""
+    order: int | None = Field(default=None, description="Execution order for this transformation")
     name: str = Field(..., description="Name of the object being moved")
     destination: str = Field(..., description="Destination location, character name, or 'Inventory'")
+
+
+class UnblockedLocation(BaseModel):
+    """Represents a blocked passage that becomes accessible."""
+    order: int | None = Field(default=None, description="Execution order for this transformation")
+    location: str = Field(..., description="Name of the location that becomes accessible")
+
+
+class PlayerMovement(BaseModel):
+    """Represents the player moving to a new location."""
+    order: int | None = Field(default=None, description="Execution order for this transformation")
+    location: str = Field(..., description="Destination location for the player")
 
 
 class WorldUpdatePrediction(BaseModel):
     """Structured prediction of world state changes from LLM output."""
     moved_items: list[MovedObject] = Field(default_factory=list, description="List of objects that were moved")
-    unblocked_locations: list[str] = Field(default_factory=list, description="List of previously blocked passages that are now accessible")
-    player_movement: str | None = Field(default=None, description="New location if player moved, None otherwise")
+    unblocked_locations: list[UnblockedLocation] = Field(default_factory=list, description="List of previously blocked passages that are now accessible")
+    player_movement: PlayerMovement | None = Field(default=None, description="New location if player moved, None otherwise")
     narration: str = Field(..., description="Narration describing the world changes")
+    negative_narration: str = Field(..., description="Neutral narration to use if the update cannot be applied")
 
-    @field_validator('player_movement')
+    @field_validator('unblocked_locations', mode='before')
     @classmethod
-    def validate_player_movement(cls, v: str | None) -> str | None:
-        """Ensure player_movement is not an empty string."""
-        if v == "":
+    def normalize_unblocked_locations(cls, v):
+        """Accept legacy string entries and normalize them into ordered objects."""
+        if v in (None, ""):
+            return []
+
+        if isinstance(v, list):
+            normalized = []
+            for entry in v:
+                if isinstance(entry, str):
+                    normalized.append({"order": None, "location": entry})
+                else:
+                    normalized.append(entry)
+            return normalized
+
+        return v
+
+    @field_validator('player_movement', mode='before')
+    @classmethod
+    def validate_player_movement(cls, v):
+        """Accept legacy strings and normalize them into ordered objects."""
+        if v == "" or v == {}:
             return None
+        if isinstance(v, str):
+            return {"order": None, "location": v}
         return v
 
     @field_validator('narration')
@@ -129,4 +163,12 @@ class WorldUpdatePrediction(BaseModel):
         """Ensure narration is not empty."""
         if not v or not v.strip():
             raise ValueError("Narration cannot be empty")
+        return v.strip()
+
+    @field_validator('negative_narration')
+    @classmethod
+    def validate_negative_narration(cls, v: str) -> str:
+        """Ensure negative narration is not empty."""
+        if not v or not v.strip():
+            raise ValueError("Negative narration cannot be empty")
         return v.strip()

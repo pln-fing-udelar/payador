@@ -125,25 +125,31 @@ def game_loop(message, history):
         return "Error processing your input. Please try again."
     
     # World update
-    world.update(response_update)
+    update_success = world.update(response_update)
     updated_symbolic_state = jsonpickle.encode(world, unpicklable=True)
     updated_rendered_state = world.render_world(language=language)
-    
-    if last_player_position is not world.player.location:
-        # Narrate new scene
-        last_player_position = world.player.location
-        system_msg_new_scene, user_msg_new_scene = prompt_narrate_current_scene(
-            updated_rendered_state,
-            previous_narrations = world.player.visited_locations[world.player.location.name],
-            language=language
-            )
 
-        new_scene_narration = narrative_model.prompt_model(system_msg=system_msg_new_scene, user_msg=user_msg_new_scene)
-        world.player.visited_locations[world.player.location.name]+=[new_scene_narration] 
-        answer += f"\n{new_scene_narration}\n\n"
+    if not update_success:
+        answer += f"{world_update.negative_narration}\n"
     else:
-        # Narrate actions in the current scene using the narration from the world update
+        current_location_name = world.player.location.name
+        is_first_visit = len(world.player.visited_locations[current_location_name]) == 0
+
+        # Always include the outcome of the player input.
         answer += f"{world_update.narration}\n"
+        
+        if is_first_visit:
+            # Narrate the scene the first time the player reaches this location.
+            last_player_position = world.player.location
+            system_msg_new_scene, user_msg_new_scene = prompt_narrate_current_scene(
+                updated_rendered_state,
+                previous_narrations = world.player.visited_locations[current_location_name],
+                language=language
+                )
+
+            new_scene_description = narrative_model.prompt_model(system_msg=system_msg_new_scene, user_msg=user_msg_new_scene)
+            world.player.visited_locations[current_location_name] += [new_scene_description]
+            answer += f"\n{new_scene_description}\n" 
 
     last_world_state = updated_rendered_state
     print(f"\n🌎 World state 🌍\n>Player input: {message}\n{last_world_state}")

@@ -135,6 +135,9 @@ def game_loop(message, history):
         current_location_name = world.player.location.name
         is_first_visit = len(world.player.visited_locations[current_location_name]) == 0
 
+        # Always include the outcome of the player input.
+        answer += f"{world_update.narration}\n"
+        
         if is_first_visit:
             # Narrate the scene the first time the player reaches this location.
             last_player_position = world.player.location
@@ -146,10 +149,7 @@ def game_loop(message, history):
 
             new_scene_description = narrative_model.prompt_model(system_msg=system_msg_new_scene, user_msg=user_msg_new_scene)
             world.player.visited_locations[current_location_name] += [new_scene_description]
-            answer += f"\n{new_scene_description}\n\n"
-
-        # Always include the outcome of the player input.
-        answer += f"{world_update.narration}\n"
+            answer += f"\n{new_scene_description}\n" 
 
     last_world_state = updated_rendered_state
     print(f"\n🌎 World state 🌍\n>Player input: {message}\n{last_world_state}")
